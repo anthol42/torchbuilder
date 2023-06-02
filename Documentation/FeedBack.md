@@ -1,8 +1,10 @@
 # FeedBack API
 ## Description
 Class to make a fully customisable and informative loading bar that looks like this:
-    Epoch 1/20
-    520/1050 [===================>---------------------]  eta 28  s      accuracy=0.52000    loss=1.12346
+    
+Epoch 1/20
+    
+520/1050 [===================>---------------------]  eta 28  s      accuracy=0.52000    loss=1.12346
 
 ## How to use
 1. Create a feedback object with desired parameters. (See init documentation)
