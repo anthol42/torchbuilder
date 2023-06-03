@@ -41,6 +41,7 @@ def experiment1(args):
     )
     print("Training done!  Saving...")
     resultSocket.write(accuracy=float(np.array(val_accuracy).mean()), crossEntropy=float(np.array(val_loss).mean()))
+    rtable.toTxt()
     save_dict = {
         "epoch": config["training_config"]["num_epochs"],
         "model_state_dict": model.state_dict(),
