@@ -1,4 +1,4 @@
 #!/bin/bash
 
 
-python3 ~/torchbuilder/main $PWD $0
+python3 ~/torchbuilder/main.py $PWD $0
