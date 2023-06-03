@@ -77,5 +77,6 @@ filetree = {
     "buildResultTable.py": File(fileToCopy="resources/buildResultTable.py"),
     "main.py":File(fileToCopy="resources/main.py"),
     "requirements.txt":File(fileToCopy="resources/requirements.txt"),
-    "README.md":File()
+    "README.md":File(),
+    "make_computeCan_venv.sh":File(fileToCopy="resources/make_computecan_venv.sh")
 }
