@@ -56,9 +56,9 @@ def create_project(project_path, cli_kwargs = None):
     filetree['README.md'].content = f"# {project_name}\n\n## Description\n\n## How to use\n\n## Examples"
     os.mkdir(project_path)
     _make_subfolder(f'{project_path}', filetree)
-    if not cli_kwargs.get("--venv"):
-        pass
-    else:
+    if cli_kwargs.get("--venv") is None:
+        cli_kwargs["--venv"] = True
+    if cli_kwargs["--venv"]:
         subprocess.run(['sh', './resources/create_venv.sh', project_path])
 
 
