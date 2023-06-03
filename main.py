@@ -1,9 +1,10 @@
 import os
+from pathlib import PurePath
+os.chdir(PurePath(__file__).parent)
 import shutil
 from setting import filetree
 import sys
 from setting import File
-from pathlib import PurePath
 import subprocess
 import time
 
