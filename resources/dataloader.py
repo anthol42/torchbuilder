@@ -1,4 +1,4 @@
-from data.Datasets.dataset import make_dataset
+from data.datasets.dataset import make_dataset
 from torch.utils.data import DataLoader
 
 def make_dataloader(config):
