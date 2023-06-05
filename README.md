@@ -29,7 +29,31 @@ experiment with different hyperparameters to try.  In later subsection,
 proposed guidelines will explain in more details how to structure the project.
 
 ### Installation
-TODO -------- ---------------
+
+First clone the repository:
+```commandline
+git clone "https://github.com/carcajou666/torchbuilder.git"
+```
+Then go in the newly cloned directory:
+```commandline
+cd torchbuilder
+```
+Then compile the installation script:
+```commandline
+chmod +x install.sh
+```
+Then install the app:
+```commandline
+./install.sh
+```
+It may be needed to restart the terminal app to let the installation take effect.
+
+**Uninstall**
+```commandline
+cd ~/torchbuilder
+chmod +x uninstall.sh
+./uninstall.sh
+```
 
 ### Creating a solution
 Basic syntax: torchbuilder make [solution name] project=[project name] **kwargs
