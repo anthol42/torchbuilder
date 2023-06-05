@@ -62,7 +62,7 @@ def create_project(project_path, cli_kwargs = None):
     if cli_kwargs.get("--venv") is None:
         cli_kwargs["--venv"] = True
     if cli_kwargs["--venv"]:
-        subprocess.run(['sh', './resources/create_venv.sh', project_path])
+        subprocess.run(['bash', './resources/create_venv.sh', project_path])
 
 
 def create_solution(solution_path: PurePath, project_name=None, cli_kwargs={}):
