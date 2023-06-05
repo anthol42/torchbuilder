@@ -81,6 +81,6 @@ filetree = {
     "main.py":File(fileToCopy="resources/main.py"),
     "requirements.txt":File(fileToCopy="resources/requirements.txt"),
     "README.md":File(),
-    "make_computeCan_venv.sh":File(fileToCopy="resources/make_computecan_venv.sh")
+    "make_computeCan_venv.sh":File(fileToCopy="resources/make_computecan_venv.sh"),
     ".gitignore": File(fileToCopy="resources/gitignore.txt"),
 }
