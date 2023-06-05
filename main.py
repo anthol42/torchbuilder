@@ -76,7 +76,7 @@ def create_solution(solution_path: PurePath, project_name=None, cli_kwargs={}):
         file.write(f"{solution_name}\n")
     with open('resources/gitignore.txt', 'r') as file:
         gitignore = file.read()
-    with open(solution_path / PurePath("ressources/gitignore.txt"), 'w') as file:
+    with open(solution_path / PurePath(".gitignore"), 'w') as file:
         file.write(gitignore)
     with open(solution_path / PurePath("README.md"), 'w') as file:
         file.write(f"# {solution_name}\n\n## Description\n\n## How to use\n\n## Examples")
