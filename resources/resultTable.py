@@ -193,6 +193,7 @@ class Table:
         else:
             record_idx = -1
             self.records[category].append({
+                "RunId": self.create_run_id(),
                 "name": experiment_name,
                 "config": config_file_name,
                 "hyperparameters": hyper_format,
@@ -201,6 +202,14 @@ class Table:
                 "Filled":False
             })
         return self.RecordSocket(self.records[category][record_idx], self.metrics, self.save)
+    def create_run_id(self):
+        max_id = 0
+        for cat in self.records.values():
+            for record in cat:
+                if record["RunId"] > max_id:
+                    max_id = record["RunId"]
+
+        return max_id + 1
 
     def add_category(self, category_name: str):
         """
@@ -240,17 +249,18 @@ class Table:
         Export to pands' DataFrame
         :return: pandas.DataFrame
         """
-        columns = ["Category", "Experiment", "Hyperparameters", "Configuration"] + self.metrics + ["Status", "Last Modified"]
+        columns = ["RunId", "Category", "Experiment", "Hyperparameters", "Configuration"] + self.metrics + ["Status", "Last Modified"]
         data = []
         for categoryName, categoryContent in self.records.items():
             for record in categoryContent:
-                rec = [categoryName, record["name"], record["hyperparameters"], record["config"]]
+                rec = [record["RunId"], categoryName, record["name"], record["hyperparameters"], record["config"]]
                 for metric_name in self.metrics:
                     rec.append(record[metric_name])
                 rec += [record["status"], record["LastModified"]]
                 data.append(rec)
 
         df = pd.DataFrame(data=data, columns=columns)
+        df = df.set_index(df["RunId"])
         df.index.name = 'Run Id'
         return df
 
@@ -266,6 +276,8 @@ class Table:
             else:
                 return ", ".join(x_list)
         df["Hyperparameters"] = df["Hyperparameters"].apply(formtHyper)
+        df["Category"] = df["Category"].apply(lambda x: "" if x == "defaultCategory" else x)
+        df = df.drop(columns=["RunId"])
         df = df.groupby("Category", group_keys=True).apply(lambda x: x).drop(columns=["Category"])
         return str(df)
 

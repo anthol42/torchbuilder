@@ -1,0 +1,2 @@
+Run Id,RunId,Category,Experiment,Hyperparameters,Configuration,F1,crossEntropy,Status,Last Modified
+1,1,CNN,CNNTest1,dataset:Huge,CNN1.yaml,0.98,0.42,CREATED,2023-06-05 10:13:58.453889
