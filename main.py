@@ -1,3 +1,6 @@
+# Made by: Anthony Lavertu
+# Initial release: 2023-06-05
+# File: main.py
 import os
 from pathlib import PurePath
 os.chdir(PurePath(__file__).parent)

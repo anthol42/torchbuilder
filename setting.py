@@ -1,3 +1,6 @@
+# Made by: Anthony Lavertu
+# Initial release: 2023-06-05
+# File: main.py
 """
 Class that represent a file in the filetree
 """
