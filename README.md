@@ -29,6 +29,9 @@ experiment with different hyperparameters to try.  In later subsection,
 proposed guidelines will explain in more details how to structure the project.
 
 ### Installation
+*Notes:You may need to install additional dependencies like python-venv or other to be able to
+create a virtual environment.  In addition, you will need to set up your git with your profile
+to enable automatic push.*
 
 First clone the repository:
 ```commandline
