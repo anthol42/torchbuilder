@@ -21,6 +21,7 @@ def experiment1(args):
     print("Data loaded successfully!")
 
     model = Classifier(config=config)
+    model.to(device)
     print("Model loaded successfully!")
 
     optimizer = make_optimizer(model.parameters(), config)

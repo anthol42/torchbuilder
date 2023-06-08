@@ -24,7 +24,7 @@ def train_one_epoch(dataloader, model, optimizer, criterion, device, feedback, s
 
         # Calculate metrics
         lossCounter(loss)
-        accCounter(accuracy_score(y, torch.argmax(pred, dim=1).detach().numpy()))
+        accCounter(accuracy_score(y.cpu(), torch.argmax(pred.cpu(), dim=1).detach().cpu().numpy()))
 
         #Display metrics
         feedback(

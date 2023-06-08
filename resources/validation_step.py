@@ -19,8 +19,8 @@ def validation_step(model, dataloader, criterion, device, feedback):
             loss = criterion(pred, y)
 
             # Calculate metrics
-            lossCounter(loss)
-            accCounter(accuracy_score(y, torch.argmax(pred, dim=1).detach().numpy()))
+            lossCounter(loss.item())
+            accCounter(accuracy_score(y.cpu(), torch.argmax(pred.cpu(), dim=1).detach().cpu().numpy()))
 
         # Display metrics
         feedback(
