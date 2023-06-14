@@ -1,6 +1,8 @@
 import time
 from datetime import datetime
-from metrics.dynamicMetric import DynamicMetric
+import sys
+# from metrics.dynamicMetric import DynamicMetric
+from dynamicMetric import DynamicMetric
 
 class FeedBack:
     """
@@ -18,7 +20,7 @@ class FeedBack:
 
         >>> feedback = FeedBack(1050, max_c=40)
 
-        >>> print(f"Epoch {epoch + 1}/10")
+        >>> eprint(f"Epoch {epoch + 1}/10")
 
         >>> for i in range(1050):
 
@@ -80,7 +82,10 @@ class FeedBack:
                 line += f"{self.get_eta(valid)}  "
             line += metrics
             #print(line)
-            print("\r" + line, end="")
+            sys.stderr.write("\r" + line)
+            if valid:
+                sys.stderr.write("\n")
+            sys.stderr.flush()
         self.current += 1
 
     def get_stepformat(self):
@@ -129,11 +134,36 @@ class FeedBack:
 
         return f"eta {eta}s"
 
+def eprint(*args, sep=" ", end="\n"):
+    """
+    Analog to print, but to print in the stderr file instead of stdout.  In addition, it auto flush the input.
+    In fact, it is only a shortcut since the exact same thing could be done with the print function:
+
+    >>> print("Hello world", file=sys.stderr, flush=True)
+
+    >>># Equivalent to:
+
+    >>> eprint("Hello world")
+
+    :param args: args to print
+    :param sep: the separator
+    :param end: What to put at the end
+    :return: None
+    """
+    args = [str(arg) for arg in args]
+    sys.stderr.write(sep.join(args))
+    sys.stderr.write(end)
+    sys.stderr.flush()
+
 if __name__ == "__main__":
     for epoch in range(10):
         feedback = FeedBack(1050, max_c=40)
-        print(f"Epoch {epoch + 1}/10")
+        eprint(f"Epoch {epoch + 1}/10")
         for i in range(1050):
             feedback(accuracy=((i + 1)/1000), loss=1.1234567)
             time.sleep(0.01)
         feedback(valid=True, accuracy=0.42, loss=1.1234567)
+        eprint()
+
+    print(["a", "b", "c"], "d", "e", sep="")
+    eprint(["a", "b", "c"], "d", "e", sep="")

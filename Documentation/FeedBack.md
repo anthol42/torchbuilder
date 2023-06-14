@@ -61,3 +61,35 @@ for epoch in range(10):
         :param show_eta: Whether to show the eta
         """
 ```
+
+## Bonus:
+
+### Description
+The feedback package comes with a built-in function that can print to the stderr output, and
+automatically flush the data.  It is strongly suggested to use this function instead of
+the original print function for lines over a feedback bar.  This will assure a good format.
+In addition, the function is real;y easy to use since its interface is exactly like the original
+print.
+
+### eprint
+
+The function is called eprint.  Here is its signature and documentation:
+```python
+def eprint(*args, sep=" ", end="\n"):
+    """
+    Analog to print, but to print in the stderr file instead of stdout.  In addition, it auto flush the input.
+    In fact, it is only a shortcut since the exact same thing could be done with the print function:
+
+    >>> print("Hello world", file=sys.stderr, flush=True)
+
+    >>># Equivalent to:
+
+    >>> eprint("Hello world")
+
+    :param args: args to print
+    :param sep: the separator
+    :param end: What to put at the end
+    :return: None
+    """
+```
+

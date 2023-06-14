@@ -18,8 +18,8 @@ def train(model, optimizer, train_loader, val_loader, criterion, num_epochs, dev
     val_accuracy = []
 
     for epoch in range(num_epochs):
-        # Setup
-        print(f"Epoch {epoch + 1}/{num_epochs}")
+        # Setups
+        utils.eprint(f"Epoch {epoch + 1}/{num_epochs}")
         feedback = utils.FeedBack(len(train_loader), output_rate=1)
 
         # Train the epoch and validate
