@@ -1,8 +1,17 @@
+import time
+
 import pandas as pd
 import os
 from pathlib import PurePath
 from datetime import datetime
+import traceback
 import json
+
+"""
+This exception is raised when the result table file is locked for too long. (A time out occur).
+"""
+class FileLockError(Exception):
+    pass
 """
 # The Result Table Concept:
     The Result Table concept state that results should be stored once and be unalterable afterward.  This preserved the 
@@ -21,8 +30,75 @@ import json
         
 """
 
+
+class RecordSocket:
+    """
+    This is a class used to write result in its reserved spaced in the result table.  It's a unique usage class.
+    This means that once the write method is called, the write method is no longer available.
+    """
+
+    def __init__(self, record: dict, metrics: list, saving_func, ignore_func):
+        self.record = record
+        self.save = saving_func
+        self._ignore = ignore_func
+        self.active = True
+        self.metrics = metrics
+
+    def write(self, **kwargs):
+        """
+        Write results to the table
+        :param kwargs: metrics to pass to the table.  Need to pass ALL the metrics at the same time.
+        :return: None
+        """
+        if self.active:
+            if set(self.metrics) != set(kwargs.keys()):
+                print(set(self.metrics), set(kwargs.keys()))
+                raise ValueError("Registered metrics and passed metrics are not the same!")
+            for key, value in kwargs.items():
+                self.record[key] = value
+            self.record['LastModified'] = str(datetime.now())
+            self.record["Filled"] = True
+            print("saving ... ")
+            self.save()
+            self.active = False
+        else:
+            raise AttributeError("This record socket has already been written to.  Create an other one or create a "
+                                 "new record to write again!")
+
+    def ignore(self):
+        """
+        This method will remove the record socket from the table.  Call this method when an exception happen to
+        avoid polluting the result table.
+        Returns: None
+        """
+        if self.active:
+            self._ignore()
+            self.active = False
+        else:
+            raise AttributeError("This record socket has already been written to.  It is now impossible to remove "
+                                 "it.")
+
+    def __str__(self):
+        s = f"{self.record['name']}<RecordSocket>\n"
+        max_len = len(s)
+        for metric in self.metrics:
+            if self.record.get(metric) is not None:
+                toAppend = f"\t{metric}: {self.record[metric]}\n"
+                s += toAppend
+                if len(toAppend) > max_len:
+                    max_len = toAppend
+            else:
+                toAppend = f"\t{metric}: None\n"
+                s += toAppend
+                if len(toAppend) > max_len:
+                    max_len = toAppend
+        s += "-" * max_len
+        return s
+
 class Table:
     """
+    NEW!!! Table class is now threadproof !!!
+
     This class implement the Result Table concept.  The way it works is to firstly create a table with the TableBuilder
     class.  (This is done only once, see TableBuilder documentation for more info).  Once the table is created, we can
     use the Table object.  We only need to specify the path of the result table that we are using to create an instance
@@ -47,6 +123,7 @@ class Table:
     In addtition:
         - Adding a category: use the add_category method
         - Export to excel/csv/json: use the export method that will export to a pandas dataframe.  Then, you can save it in any format.
+        - Table class is thread proof and multprocess proof (If that even exits)
 
     Notes:
         Every action is saved automatically.
@@ -90,68 +167,51 @@ class Table:
         :param path: If debug, the save function is deactivated.  This way, it is possible to run many times the same
                      experiment for debugging.
         """
-        with open(path, 'r') as file:
+
+        self.path = path
+        self.DEBUG = debug
+        self.fd_path = f"{self.path}.lock"
+        self.records = {}
+        self._load_table(lock=False)
+        self._record_under_modification = []  # List of list [category, run_id, state, record] --> state: save / ignore
+
+
+    def _load_table(self, lock=True):
+        """
+        This function will refresh the in memory version of the table.  It will also lock the rtable file to avoid
+        concurrent modifications.
+        :param lock: Whether to lock the file or not.  If the load table is called to update the internal representation
+                        of the table only, it is suggested to put it to false.  However, if the load table is called to
+                        save, it is essential to lock the file.  Remember to unlock the file.  The save function already
+                        handle the locking and unlocking of the file.
+        Returns: None
+        """
+        n_try = 0
+        while os.path.exists(self.fd_path) and n_try < 10:
+            time.sleep(0.1)
+            n_try += 1
+
+        if n_try == 10:
+            raise FileLockError(f"Maximum number of retry to read the rtable file.  MAX_RETRY: {n_try}")
+
+        with open(self.path, 'r') as file:
             load_dict = json.load(file)
 
         self.allow_update = load_dict['metadata']['allow_update']
-        self.path = path
         self.name = load_dict['metadata']['name']
         self.timeCreated = load_dict['metadata']['timeCreated']
         self.format = load_dict['metadata']['format']
         self.round_decimal = load_dict['preferences']['round_decimal']
-        self.DEBUG = debug
 
         self.metrics = load_dict['metrics']
-        self.records = load_dict['records']
+        self.records = load_dict["records"]
+
         if len(self.records.keys()) == 0:
             self.records["defaultCategory"] = []
 
-    class RecordSocket:
-        """
-        This is a class used to write result in its reserved spaced in the result table.  It's a unique usage class.
-        This means that once the write method is called, the write method is no longer available.
-        """
-        def __init__(self, record:dict, metrics: list, saving_func):
-            self.record = record
-            self.save = saving_func
-            self.active = True
-            self.metrics = metrics
-
-        def write(self, **kwargs):
-            """
-            Write results to the table
-            :param kwargs: metrics to pass to the table.  Need to pass ALL the metrics at the same time.
-            :return: None
-            """
-            if self.active:
-                if set(self.metrics) != set(kwargs.keys()):
-                    print(set(self.metrics), set(kwargs.keys()))
-                    raise ValueError("Registered metrics and passed metrics are not the same!")
-                for key, value in kwargs.items():
-                    self.record[key] = value
-                self.record['LastModified'] = str(datetime.now())
-                self.record["Filled"] = True
-                self.save()
-                self.active = False
-            else:
-                raise AttributeError("This record socket has already been written to.  Create an other one or create a "
-                                     "new record to write again!")
-        def __str__(self):
-            s = f"{self.record['name']}<RecordSocket>\n"
-            max_len = len(s)
-            for metric in self.metrics:
-                if self.record.get(metric) is not None:
-                    toAppend = f"\t{metric}: {self.record[metric]}\n"
-                    s += toAppend
-                    if len(toAppend) > max_len:
-                        max_len = toAppend
-                else:
-                    toAppend = f"\t{metric}: None\n"
-                    s += toAppend
-                    if len(toAppend) > max_len:
-                        max_len = toAppend
-            s += "-"*max_len
-            return s
+        # Lock the file until saving to avoid conflict between the ram and stored version.
+        if lock:
+            self.fd = os.open(self.fd_path, os.O_CREAT | os.O_TRUNC | os.O_WRONLY)
 
     def format_hyper(self, hyperparameters:dict) -> str:
         hyper_str = [f"{key}:{value}" for key, value in hyperparameters.items()]
@@ -170,6 +230,7 @@ class Table:
                                 hyperparameter.
         :return: TableSocket, the object with which it is possible to write results to the Table.
         """
+        self._load_table(lock=False)
         if category and category not in self.records.keys():
             raise ValueError("Invalid category name")
         if not category:
@@ -189,19 +250,50 @@ class Table:
                 else:
                     raise ValueError("Experiment already exits!")
         if record_state == 'UPDATE':
-             self.records[category][record_idx]['status'] = record_state
+            old_record_state = self.records[category][record_idx]['status']
+            self.records[category][record_idx]['status'] = record_state
+            run_id = self.records[category][record_idx]["RunId"]
+
+            def ignore():
+                index_list = [item["RunId"] for item in self.records[category]]
+                idx = index_list.index(run_id)
+                self.records[category][idx]["status"] = old_record_state
+
+                # Remove it from state under modification
+                index_list = [item[1] for item in self._record_under_modification]
+                idx = index_list.index(run_id)
+                self._record_under_modification[idx][2] = "ignore"
+                self._save()
+
         else:
-            record_idx = -1
+            record_idx = len(self.records[category])
+            run_id = self.create_run_id()
+            # Create a new record socket
             self.records[category].append({
-                "RunId": self.create_run_id(),
+                "RunId": run_id,
                 "name": experiment_name,
                 "config": config_file_name,
                 "hyperparameters": hyper_format,
                 "status": record_state,
-                "LastModified":datetime.now(),
+                "LastModified": str(datetime.now()),
                 "Filled":False
             })
-        return self.RecordSocket(self.records[category][record_idx], self.metrics, self.save)
+            for metric in self.metrics:
+                self.records[category][record_idx][metric] = None
+            def ignore():
+                index_list = [item["RunId"] for item in self.records[category]]
+                idx = index_list.index(run_id)
+                del self.records[category][idx]
+
+                # Remove it from state under modification
+                index_list = [item[1] for item in self._record_under_modification]
+                idx = index_list.index(run_id)
+                self._record_under_modification[idx][2] = "ignore"
+                self._save()
+        self._record_under_modification.append([category, run_id, "save", ])
+        socket = RecordSocket(self.records[category][record_idx], self.metrics, self._save, ignore)
+        self._save()
+        return socket
     def create_run_id(self):
         max_id = 0
         for cat in self.records.values():
@@ -220,13 +312,16 @@ class Table:
         if category_name in self.records.keys():
             raise ValueError("Category already exist.")
         self.records[category_name] = []
-        self.save()
+        self._save()
 
-    def save(self):
+    def _save(self):
         """
         Internal function.  YOU MUST NOT USE IT!!!!
         :return:
         """
+        # Save record to another variable since we are going to overwrite them with the load_table method.
+        internal_record = self.records.copy()
+        self._load_table()
         table = {
             "metadata": {
                 "name": self.name,
@@ -240,9 +335,78 @@ class Table:
             "metrics": self.metrics,
             "records": self.records
         }
+        # Add categories:
+        new_categories = list(set(internal_record.keys()) - set(table["records"].keys()))
+        if len(new_categories) > 0:
+            for cat in new_categories:
+                table["records"][cat] = []
+
+        # Add or modify records in the table
+        for cat, run_id, state in self._record_under_modification:
+            # Search for specific record in stored table (On disk)
+            stored_record_idx = [item["RunId"] for item in self.records[cat]]
+            try:
+                stored_idx = stored_record_idx.index(run_id)  # If record exist in stored table
+            except ValueError:
+                stored_idx = -1  # If record doesn't exist in stored table
+
+            if state == "save":
+                ram_record_idx = [item["RunId"] for item in internal_record[cat]]
+                ram_idx = ram_record_idx.index(run_id)
+                if stored_idx == -1:
+                    table["records"][cat].append(internal_record[cat][ram_idx])
+                else:
+                    table["records"][cat][stored_idx] = internal_record[cat][ram_idx]
+            else: # state is ignore, we need to remove it from the table
+                if stored_idx > -1:
+                    del table["records"][cat][stored_idx]
+
+                # If stored idx is equal to -1, this means that the record wasn't found in the stored table.  In this
+                # case, we do not have to do nothing.
         if not self.DEBUG:
-            with open(self.path, 'w') as file:
+            try:
+                with open(f"{self.path}.tmp", 'w') as file:
+                    json.dump(table, file)
+            except TypeError:
+                traceback.print_exc()
+                os.close(self.fd)
+                os.unlink(self.fd_path)
+                exit(1)
+            with open(f"{self.path}", 'w') as file:
                 json.dump(table, file)
+            os.remove(f"{self.path}.tmp")
+
+
+        os.close(self.fd)
+        os.unlink(self.fd_path)
+
+    def _ignore_all(self):
+        self._load_table(lock=False)
+        for rec in self._record_under_modification:
+            category = rec[0]
+            run_id = rec[1]
+            ram_record_idx = [item["RunId"] for item in self.records[category]]
+            ram_idx = ram_record_idx.index(run_id)
+            if not self.records[category][ram_idx]["Filled"]:
+                print(self.records[category][ram_idx])
+                rec[2] = "ignore"
+        self._save()
+
+    def handle_exception(self, excepthook):
+        """
+        This method is made to handle exception.  In a case where record have been registered, but not written to, and
+        an exception happen, to avoid having unfilled record in the result table (polluting the result table), set the
+        sys.except hook with the return callback of this method.  The callback will clean every unfilled record when an
+        exception happen.
+
+        :param excepthook: the value of sys.excepthook (see examples for more details)
+        :return: callback
+        """
+        def _handle_exception(t, value, tb):
+            self._ignore_all()
+            excepthook(t, value, tb)
+        return _handle_exception
+
 
     def export(self):
         """
@@ -367,11 +531,16 @@ class TableBuilder:
 
 if __name__ == "__main__":
     ### To make the example runnable more than once, I reset the table at every run.  Do not do this in experimentation!
+    import sys
+    from color import TraceBackColor, Color
+
+    sys.excepthook = TraceBackColor(Color(203))
 
     ## In table builder script (Should be in an auxiliary file) ##
     if os.path.exists("rtable.json"):
         os.remove("rtable.json")
     table = TableBuilder(["F1", "crossEntropy"], PurePath("rtable.json")).build()
+
     table.add_category("CNN")
     table.add_category("Transformer")
     ## End of builder script ##
@@ -379,11 +548,17 @@ if __name__ == "__main__":
     ## Example of what will happen in an experiment script ##
 
     table = Table("rtable.json")
-    socket = table.registerRecord("CNNTest1", "CNN1.yaml", category="CNN", dataset="Huge")
 
+    # Exception handling
+    sys.excepthook = table.handle_exception(sys.excepthook)
+
+    socket1 = table.registerRecord("CNNTest1", "CNN1.yaml", category="CNN", dataset="Huge")
+    socket2 = table.registerRecord("CNNTest2", "CNN1.yaml", category="CNN", dataset="Huge")
+    socket1.write(crossEntropy=int, F1=0.98)
+    print("written")
+    # socket.ignore()
     # End of script:
-    print("writing")
-    socket.write(crossEntropy=0.42, F1=0.98)
+    #print(10/0)
 
     # Export to csv
-    table.export().to_csv("result_table.csv")
+    table.toTxt("result_table.txt")
