@@ -17,7 +17,9 @@ Q & A:
        results integrity.
 
 ## Class Table
+**NEW!!! Table class is now thread-proof !!!**
 ### Description
+
 This class implement the Result Table concept.  The way it works is to firstly create a table with the TableBuilder
 class.  (This is done only once, see TableBuilder documentation for more info).  Once the table is created, we can
 use the Table object.  We only need to specify the path of the result table that we are using to create an instance
@@ -25,17 +27,17 @@ of the table.  You must not create more than one instance of the same table sinc
 saving.  Then, we can register a result in the table.  Each line/results in a table are called records.
 It is strongly suggested to register records at the beginning of the script since it will stop the program if the
 experiment has already been done, thus preventing the run of two identical jobs.  Next, if the job is unique and no
-errors are thrown, this method will return a RecordSocket.  RecordSockets are the object you program will interact
-with.  They are directly connected to the table, but are limited to write in their allocated space.  this prevents
+errors are thrown, this method will return a RecordSocket.  RecordSockets are the object your program will interact
+with.  They are directly connected to the table, but are limited to write in their allocated space.  This prevents
 data corruption.  In addition, to add a layer of security, RecordSockets can be used only once.  This means that
 once the results are written, they cannot be updated.  This improves data authenticity.  This explication was the
 basic usage of Results Tables.  When using the write method, you must pass EVERY metrics recorded in the Table at
-it's construction by the TableBuilder.  Metrics are passed as keywords arguments (kwargs) to the write method and
+its construction by the TableBuilder.  Metrics are passed as keywords arguments (kwargs) to the write method and
 must not contain spelling errors.
 
 ### How to use
 1. Create a table with TableBuilder (see documentation)
-2. Load your table at the beginning of the script.
+2. Load your table at the beginning of the script and setup the error handling.  (See examples)
 3. Register the result and retrieve the RecordSocket. (At the begining of the script)
 4. Use the RecordSocket to write the final results at the end of the experiment.  (Note that this can only be done once.)
 
@@ -43,6 +45,7 @@ In addtition:
 
 - Adding a category: use the add_category method
 - Export to excel/csv/json: use the export method that will export to a pandas dataframe.  Then, you can save it in any format.
+- Table class is thread-proof and multiprocess proof (If that even exits)
 
 ### Notes
 
@@ -51,9 +54,16 @@ Every action is saved automatically.
 ### Examples
 ```python
 ### Begining of the script ###
+from resultTable import Table
+import sys
 # This assumes that the table has already been built with two categories: CNN and Transformers
 # In addition, there is two metrics that are recorded in the table: crossEntropy and F1
 table = Table("rtable.json")
+
+# This is for the error handling.  You must put it at the beginning of the file.
+sys.excepthook = table.handle_exception(sys.excepthook)
+
+# Register the socket:
 socket = table.registerRecord("CNNTest1", "CNN1.yaml", category="CNN", dataset="Huge")
 
 ### End of scripts, when experiment is done and results are collected ###

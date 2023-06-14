@@ -97,7 +97,7 @@ class RecordSocket:
 
 class Table:
     """
-    NEW!!! Table class is now threadproof !!!
+    NEW!!! Table class is now thread-proof !!!
 
     This class implement the Result Table concept.  The way it works is to firstly create a table with the TableBuilder
     class.  (This is done only once, see TableBuilder documentation for more info).  Once the table is created, we can
@@ -106,24 +106,24 @@ class Table:
     saving.  Then, we can register a result in the table.  Each line/results in a table are called records.
     It is strongly suggested to register records at the beginning of the script since it will stop the program if the
     experiment has already been done, thus preventing the run of two identical jobs.  Next, if the job is unique and no
-    errors are thrown, this method will return a RecordSocket.  RecordSockets are the object you program will interact
-    with.  They are directly connected to the table, but are limited to write in their allocated space.  this prevents
+    errors are thrown, this method will return a RecordSocket.  RecordSockets are the object your program will interact
+    with.  They are directly connected to the table, but are limited to write in their allocated space.  This prevents
     data corruption.  In addition, to add a layer of security, RecordSockets can be used only once.  This means that
     once the results are written, they cannot be updated.  This improves data authenticity.  This explication was the
     basic usage of Results Tables.  When using the write method, you must pass EVERY metrics recorded in the Table at
-    it's construction by the TableBuilder.  Metrics are passed as keywords arguments (kwargs) to the write method and
+    its construction by the TableBuilder.  Metrics are passed as keywords arguments (kwargs) to the write method and
     must not contain spelling errors.
 
     How to use:
         1. Create a table with TableBuilder (see documentation)
-        2. Load your table at the beginning of the script.
-        3. Register the result and retrieve the RecordSocket. (At the begining of the script)
+        2. Load your table at the beginning of the script and setup the error handling.  (See examples)
+        3. Register the result and retrieve the RecordSocket. (At the beginning of the script)
         4. Use the RecordSocket to write the final results at the end of the experiment.  (Note that this can only be done once.)
 
-    In addtition:
+    In addition:
         - Adding a category: use the add_category method
         - Export to excel/csv/json: use the export method that will export to a pandas dataframe.  Then, you can save it in any format.
-        - Table class is thread proof and multprocess proof (If that even exits)
+        - Table class is thread-proof and multiprocess proof (If that even exits)
 
     Notes:
         Every action is saved automatically.
@@ -131,11 +131,21 @@ class Table:
     Examples:
         >>>### Begining of the script ###
 
+        >>>from resultTable import Table
+
+        >>>import sys
+
         >>># This assumes that the table has already been built with two categories: CNN and Transformers
 
         >>># In addition, there is two metrics that are recorded in the table: crossEntropy and F1
 
         >>>table = Table("rtable.json")
+
+        >>># This is for the error handling.  You must put it at the beginning of the file.
+
+        >>>sys.excepthook = table.handle_exception(sys.excepthook)
+
+        >>># Register the socket:
 
         >>>socket = table.registerRecord("CNNTest1", "CNN1.yaml", category="CNN", dataset="Huge")
 
@@ -290,8 +300,8 @@ class Table:
                 idx = index_list.index(run_id)
                 self._record_under_modification[idx][2] = "ignore"
                 self._save()
-        self._record_under_modification.append([category, run_id, "save", ])
-        socket = RecordSocket(self.records[category][record_idx], self.metrics, self._save, ignore)
+        self._record_under_modification.append([category, run_id, "save", self.records[category][record_idx].copy()])
+        socket = RecordSocket(self._record_under_modification[-1][-1], self.metrics, self._save, ignore)
         self._save()
         return socket
     def create_run_id(self):
@@ -342,7 +352,7 @@ class Table:
                 table["records"][cat] = []
 
         # Add or modify records in the table
-        for cat, run_id, state in self._record_under_modification:
+        for cat, run_id, state, record in self._record_under_modification:
             # Search for specific record in stored table (On disk)
             stored_record_idx = [item["RunId"] for item in self.records[cat]]
             try:
@@ -351,12 +361,10 @@ class Table:
                 stored_idx = -1  # If record doesn't exist in stored table
 
             if state == "save":
-                ram_record_idx = [item["RunId"] for item in internal_record[cat]]
-                ram_idx = ram_record_idx.index(run_id)
                 if stored_idx == -1:
-                    table["records"][cat].append(internal_record[cat][ram_idx])
+                    table["records"][cat].append(record)
                 else:
-                    table["records"][cat][stored_idx] = internal_record[cat][ram_idx]
+                    table["records"][cat][stored_idx] = record
             else: # state is ignore, we need to remove it from the table
                 if stored_idx > -1:
                     del table["records"][cat][stored_idx]
@@ -369,6 +377,7 @@ class Table:
                     json.dump(table, file)
             except TypeError:
                 traceback.print_exc()
+                os.remove(f"{self.path}.tmp")
                 os.close(self.fd)
                 os.unlink(self.fd_path)
                 exit(1)
@@ -381,6 +390,10 @@ class Table:
         os.unlink(self.fd_path)
 
     def _ignore_all(self):
+        """
+        This method ignore all the records that haven't been filled yet.  (It removes them from the table.)
+        :return: None
+        """
         self._load_table(lock=False)
         for rec in self._record_under_modification:
             category = rec[0]
@@ -388,7 +401,6 @@ class Table:
             ram_record_idx = [item["RunId"] for item in self.records[category]]
             ram_idx = ram_record_idx.index(run_id)
             if not self.records[category][ram_idx]["Filled"]:
-                print(self.records[category][ram_idx])
                 rec[2] = "ignore"
         self._save()
 
@@ -410,7 +422,7 @@ class Table:
 
     def export(self):
         """
-        Export to pands' DataFrame
+        Export to pandas DataFrame
         :return: pandas.DataFrame
         """
         columns = ["RunId", "Category", "Experiment", "Hyperparameters", "Configuration"] + self.metrics + ["Status", "Last Modified"]
@@ -554,8 +566,9 @@ if __name__ == "__main__":
 
     socket1 = table.registerRecord("CNNTest1", "CNN1.yaml", category="CNN", dataset="Huge")
     socket2 = table.registerRecord("CNNTest2", "CNN1.yaml", category="CNN", dataset="Huge")
-    socket1.write(crossEntropy=int, F1=0.98)
+    socket1.write(crossEntropy=3.0, F1=0.98)
     print("written")
+    print(0/0)
     # socket.ignore()
     # End of script:
     #print(10/0)
