@@ -58,7 +58,6 @@ class RecordSocket:
                 self.record[key] = value
             self.record['LastModified'] = str(datetime.now())
             self.record["Filled"] = True
-            print("saving ... ")
             self.save()
             self.active = False
         else:
@@ -252,13 +251,19 @@ class Table:
         for i, record in enumerate(self.records[category]):
             if record['name'] == experiment_name and \
                     record['hyperparameters'] == hyper_format and \
-                    record['config'] == config_file_name:
+                    record['config'] == config_file_name and record["Filled"]:
                 if self.allow_update:
                     record_state = 'UPDATE'
                     record_idx = i
                     break
                 else:
-                    raise ValueError("Experiment already exits!")
+                    raise ValueError(f"Experiment already exits! RunId: {record['RunId']}")
+            elif record['name'] == experiment_name and \
+                    record['hyperparameters'] == hyper_format and \
+                    record['config'] == config_file_name and not record["Filled"]:
+                record_idx = i
+                record_state = 'FILL'
+                break
         if record_state == 'UPDATE':
             old_record_state = self.records[category][record_idx]['status']
             self.records[category][record_idx]['status'] = record_state
@@ -274,7 +279,19 @@ class Table:
                 idx = index_list.index(run_id)
                 self._record_under_modification[idx][2] = "ignore"
                 self._save()
+        elif record_state == 'FILL':
+            run_id = self.records[category][record_idx]["RunId"]
 
+            def ignore():
+                index_list = [item["RunId"] for item in self.records[category]]
+                idx = index_list.index(run_id)
+                self.records[category][idx]["status"] = old_record_state
+
+                # Remove it from state under modification
+                index_list = [item[1] for item in self._record_under_modification]
+                idx = index_list.index(run_id)
+                self._record_under_modification[idx][2] = "ignore"
+                self._save()
         else:
             record_idx = len(self.records[category])
             run_id = self.create_run_id()
@@ -567,8 +584,7 @@ if __name__ == "__main__":
     socket1 = table.registerRecord("CNNTest1", "CNN1.yaml", category="CNN", dataset="Huge")
     socket2 = table.registerRecord("CNNTest2", "CNN1.yaml", category="CNN", dataset="Huge")
     socket1.write(crossEntropy=3.0, F1=0.98)
-    print("written")
-    print(0/0)
+    print(10/0)
     # socket.ignore()
     # End of script:
     #print(10/0)
