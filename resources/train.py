@@ -4,7 +4,7 @@ import numpy as np
 
 from .train_one_epoch import train_one_epoch
 from .validation_step import validation_step
-import utils
+from utils import RGBColor, eprint, Feedback
 
 
 
@@ -19,8 +19,8 @@ def train(model, optimizer, train_loader, val_loader, criterion, num_epochs, dev
 
     for epoch in range(num_epochs):
         # Setups
-        utils.eprint(f"Epoch {epoch + 1}/{num_epochs}")
-        feedback = utils.FeedBack(len(train_loader), output_rate=1)
+        eprint(f"Epoch {epoch + 1}/{num_epochs}", color=RGBColor(200,200,200))
+        feedback = FeedBack(len(train_loader), output_rate=1, color=RGBColor(106,206,92))
 
         # Train the epoch and validate
         t_loss, t_acc = train_one_epoch(
