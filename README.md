@@ -12,14 +12,13 @@ focus on your research.  We believe that time is a scarce resource, and we
 must spare it.  In addition to that, to alleviate the risk of getting a 
 messy project, we provide suggested guidelines to help you manage your projects
 and researches as clear and understandable as possible.  We also provide
-useful resources that aren't build-in, but we believe these can help you develop faster,
-better and cleaner projects.
+useful resources that can help you develop faster, better and cleaner projects.
 
 ## How to use
 ### Context
 To make research more ordered, we use a solution as a parent folder.  
 A solution can contain many projects.  Each project can contain many
-experiments.  It is suggested to create a new solution for each bi problem
+experiments.  It is suggested to create a new solution for each problem
 to solve.  For example, if I want to make a deep neural network that detects
 anomalies in neurons, I would create a solution called something like 
 "synapticAnomalyDetection".  Then, each approach has its own project.  For example,
@@ -31,7 +30,7 @@ proposed guidelines will explain in more details how to structure the project.
 ### Installation
 *Notes:You may need to install additional dependencies like python-venv or other to be able to
 create a virtual environment.  In addition, you will need to set up your git with your profile
-to enable automatic push.*
+to enable automatic push. (With username and password)*
 
 First clone the repository:
 ```commandline
