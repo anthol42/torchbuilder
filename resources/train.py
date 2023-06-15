@@ -4,7 +4,8 @@ import numpy as np
 
 from .train_one_epoch import train_one_epoch
 from .validation_step import validation_step
-from utils import RGBColor, eprint, Feedback
+from utils import RGBColor, eprint, FeedBack
+import utils
 
 
 
