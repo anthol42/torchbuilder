@@ -33,7 +33,7 @@ class FeedBack:
 
     Notes:
         - To get tqdm kind of theme, use these parameters:
-           FeedBack(1050, max_c=40, cursors=[" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉"], cl="█", cu=" ", delim=("|","|"))
+           FeedBack(1050, max_c=40, cursors=(" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉"), cl="█", cu=" ", delim=("|","|"))
         - It integrate well with the DynamicMetric object!
     """
     def __init__(self, total_steps: int, max_c: int = 40, cursors: tuple = (">", ), cl: str = "=", cu: str = "-",

@@ -35,7 +35,7 @@ Epoch 1/20
 ## Notes
 - To get tqdm kind of theme, use these parameters:
 ```python
-FeedBack(1050, max_c=40, cursors=[" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉"], cl="█", cu=" ", delim=("|","|"))
+FeedBack(1050, max_c=40, cursors=(" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉", cl="█", cu=" ", delim=("|","|"))
 ```
 
 - It integrate well with the DynamicMetric object!
