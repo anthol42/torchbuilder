@@ -1,10 +1,9 @@
 import time
 from datetime import datetime
 import sys
-from color import ResetColor, Color, RGBColor
+from .color import ResetColor, Color, RGBColor
 import math
-# from metrics.dynamicMetric import DynamicMetric
-from dynamicMetric import DynamicMetric
+from metrics.dynamicMetric import DynamicMetric
 
 class FeedBack:
     """
