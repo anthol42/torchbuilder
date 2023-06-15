@@ -1,6 +1,8 @@
 import time
 from datetime import datetime
 import sys
+from color import ResetColor, Color, RGBColor
+import math
 # from metrics.dynamicMetric import DynamicMetric
 from dynamicMetric import DynamicMetric
 
@@ -32,15 +34,18 @@ class FeedBack:
 
     Notes:
         - To get tqdm kind of theme, use these parameters:
-           FeedBack(1050, max_c=40, cursor="█", cl="█", cu=" ", delim=("|","|"))
+           FeedBack(1050, max_c=40, cursors=[" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉"], cl="█", cu=" ", delim=("|","|"))
         - It integrate well with the DynamicMetric object!
     """
-    def __init__(self, total_steps, max_c=40, cursor=">", cl="=", cu="-", delim=("[", "]"), output_rate=10, float_prec=5, show_steps=True, show_eta=True):
+    def __init__(self, total_steps: int, max_c: int = 40, cursors: tuple = (">", ), cl: str = "=", cu: str = "-",
+                 delim: tuple = ("[", "]"), output_rate: int = 10, float_prec: int = 5, show_steps: bool = True,
+                 show_eta: bool = True, color: Color = ResetColor()):
         """
         Setup the parameters of the FeedBack object.
         :param total_steps: The total number of steps in the dataloader: usually len(dataloader)
         :param max_c: Maximum number of characters (Length of loading bar)
-        :param cursor: The character designing where the progression is.  ( When the process is completed, it is at the complete right.)
+        :param cursors: The character designing where the progression is.  ( When the process is completed, it is at the
+         total right.)
         :param cl: The characters at the left of the cursor
         :param cu: The characters at the right of the cursor
         :param delim: tuple of length 2.  The first element is the character initiating the loading bar and the second
@@ -52,10 +57,11 @@ class FeedBack:
         :param float_prec: The float precision to display
         :param show_steps: Whether to show at which step the process is
         :param show_eta: Whether to show the eta
+        :param color: The color of the text and the progress bar
         """
         self.total = total_steps
         self.max_c = max_c
-        self.cursor = cursor
+        self.cursors = cursors
         self.cl = cl
         self.cu = cu
         self.delim = delim
@@ -67,22 +73,27 @@ class FeedBack:
         self.metrics = {}
         self.start_time = None
         self.max_eta_len = 0
+        self.color = color
 
     def __call__(self, valid=False, **kwargs):
         if self.start_time is None:
             self.start_time = datetime.now()
         if self.current % self.output_rate == 0 or self.current + 1 >= self.total:
             metrics = self.format(valid, kwargs)
-            cursor_pos = int(((self.current + 1) / self.total) * self.max_c)
+            cursor_pos = int(((self.current) / self.total) * self.max_c)
+            cursor_progress = (self.current / self.total) * self.max_c - cursor_pos
+            cursor = self.cursors[math.floor(cursor_progress * len(self.cursors))]
+            if self.current == self.total:
+                cursor = self.cl
             line = ""
             if self.show_steps:
                 line += self.get_stepformat() # f"{self.current}/{self.total} "
-            line += f"{self.delim[0]}{self.cl * cursor_pos}{self.cursor}{self.cu * (self.max_c  - cursor_pos)}{self.delim[1]}  "
+            line += f"{self.delim[0]}{self.cl * cursor_pos}{cursor}{self.cu * (self.max_c  - cursor_pos)}{self.delim[1]}  "
             if self.show_eta:
                 line += f"{self.get_eta(valid)}  "
             line += metrics
             #print(line)
-            sys.stderr.write("\r" + line)
+            sys.stderr.write("\r" + str(self.color) + line + str(ResetColor()))
             if valid:
                 sys.stderr.write("\n")
             sys.stderr.flush()
@@ -134,7 +145,7 @@ class FeedBack:
 
         return f"eta {eta}s"
 
-def eprint(*args, sep=" ", end="\n"):
+def eprint(*args, sep=" ", end="\n", color: Color = ResetColor()):
     """
     Analog to print, but to print in the stderr file instead of stdout.  In addition, it auto flush the input.
     In fact, it is only a shortcut since the exact same thing could be done with the print function:
@@ -148,22 +159,20 @@ def eprint(*args, sep=" ", end="\n"):
     :param args: args to print
     :param sep: the separator
     :param end: What to put at the end
+    :param color: The color to write the text in.
     :return: None
     """
     args = [str(arg) for arg in args]
-    sys.stderr.write(sep.join(args))
+    sys.stderr.write(str(color) + sep.join(args) + str(ResetColor()))
     sys.stderr.write(end)
     sys.stderr.flush()
 
 if __name__ == "__main__":
     for epoch in range(10):
-        feedback = FeedBack(1050, max_c=40)
-        eprint(f"Epoch {epoch + 1}/10")
-        for i in range(1050):
+        feedback = FeedBack(1000, max_c=40, color=RGBColor(106,206,92))
+        eprint(f"Epoch {epoch + 1}/10", color=RGBColor(200,200,200))
+        for i in range(1000):
             feedback(accuracy=((i + 1)/1000), loss=1.1234567)
             time.sleep(0.01)
         feedback(valid=True, accuracy=0.42, loss=1.1234567)
         eprint()
-
-    print(["a", "b", "c"], "d", "e", sep="")
-    eprint(["a", "b", "c"], "d", "e", sep="")

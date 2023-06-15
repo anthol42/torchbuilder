@@ -21,6 +21,21 @@ class ResetColor(Color):
     def __init__(self):
         self.value = "\033[0m"
 
+
+class RGBColor(Color):
+    """
+    This class is a subclass of Color, but using rgb colors.  Just pass the red value, green value and blue value
+    to the constructor.  Values must be between 0 and 255
+    """
+    def __init__(self, r, g, b):
+        """
+
+        :param r: Red [0-255]
+        :param g: Green [0-255]
+        :param b: Blue [0-255]
+        """
+        self.value = f"\033[38;2;{r};{g};{b}m"
+
 class ColorPalette:
     """
     Show the color available with their id.  To use it, it is only needed to print the initialized object.
@@ -120,8 +135,9 @@ def main_func():
 
 if __name__ == '__main__':
     #print(ColorPalette())
-    print(f"{Color(154)}I am colored :) {ResetColor()} And I am not colored :(")
-    sys.excepthook = TraceBackColor(tb_color=Color(203))
-    main_func()
+    # print(f"{Color(154)}I am colored :) {ResetColor()} And I am not colored :(")
+    # sys.excepthook = TraceBackColor(tb_color=Color(203))
+    # main_func()
+    print(f"{RGBColor(106,206,92)}Hello world!!!{ResetColor()}")
 
 
