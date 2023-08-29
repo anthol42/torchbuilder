@@ -1,6 +1,6 @@
 echo "uninstalling TorchBuilder..."
 
-rm /usr/local/bin/torchbuilder
+sudo rm -f /usr/local/bin/torchbuilder
 
 rm -r ~/torchbuilder
 
