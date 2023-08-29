@@ -1,0 +1,74 @@
+default:
+[<40 files>--<16 directories>]
+  .gitignore
+  buildResultTable.py
+  main.py
+  make_computeCan_venv.sh
+  README.md
+  requirements.txt
+  torchbuilder_theme.mplstyle
+  configs:
+  [<1 file>--<0 directory>]
+    config.yml
+  data:
+  [<4 files>--<1 directory>]
+    dataloader.py
+    __init__.py
+    datasets:
+    [<2 files>--<0 directory>]
+      dataset.py
+      __init__.py
+  experiments:
+  [<3 files>--<0 directory>]
+    experiment1.md
+    experiment1.py
+    __init__.py
+  logs:
+  [<0 file>--<0 directory>]
+  losses:
+  [<2 files>--<0 directory>]
+    loss.py
+    __init__.py
+  metrics:
+  [<3 files>--<0 directory>]
+    dynamicMetric.py
+    metric.py
+    __init__.py
+  models:
+  [<2 files>--<0 directory>]
+    model.py
+    __init__.py
+  notebooks:
+  [<0 file>--<0 directory>]
+  optimizers:
+  [<2 files>--<0 directory>]
+    optimizer.py
+    __init__.py
+  results:
+  [<1 file>--<0 directory>]
+    resultTable.json
+  saved_models:
+  [<0 file>--<0 directory>]
+  schedulers:
+  [<2 files>--<0 directory>]
+    scheduler.py
+    __init__.py
+  scripts:
+  [<1 file>--<0 directory>]
+    train.sh
+  training:
+  [<4 files>--<0 directory>]
+    train.py
+    train_one_epoch.py
+    validation_step.py
+    __init__.py
+  utils:
+  [<8 files>--<0 directory>]
+    checkpoint.py
+    color.py
+    configFile.py
+    feedback.py
+    functions.py
+    resultTable.py
+    stateManager.py
+    __init__.py

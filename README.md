@@ -60,7 +60,7 @@ chmod +x uninstall.sh
 ### Creating a solution
 Basic syntax: torchbuilder make [solution name] project=[project name] **kwargs
 ```commandline
-torchbuilder make solution1 project="project1" --repo="https://github.com/abc/xyz.git" --venv=True
+torchbuilder make solution1 --project="project1" --repo="https://github.com/abc/xyz.git" --venv=True
 ```
 **Parameters:**
 - make : tells TorchBuilder that we want to make a solution
@@ -84,11 +84,7 @@ torchbuilder new project2 --venv=True
 - --venv: [optional] (True or False) If False, virtual environment won't be created.  Default:True
 
 ### Removing a project
-**Warning: You must not simply delete the folder of a project!**  This would corrupt the .solution.sol file.
-To remove a project, use this command: torchbuilder remove [project name]
-```commandline
-torchbuilder remove project2
-```
+You can safely delete the project folder, and it's not more complicated than that!
 
 ## Guidelines
 ### Idea to keep in mind

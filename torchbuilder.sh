@@ -1,4 +1,4 @@
 #!/bin/bash
 
 
-python3 ~/torchbuilder/main.py $PWD $@
+python3 ~/torchbuilder/app.py $@

@@ -1,9 +1,11 @@
 import time
 from datetime import datetime
 import sys
-from .color import ResetColor, Color, RGBColor
+from .color import ResetColor, Color
 import math
 from metrics.dynamicMetric import DynamicMetric
+from typing import List, Callable
+from concurrent.futures import ThreadPoolExecutor
 
 class FeedBack:
     """
@@ -166,12 +168,99 @@ def eprint(*args, sep=" ", end="\n", color: Color = ResetColor()):
     sys.stderr.write(end)
     sys.stderr.flush()
 
-if __name__ == "__main__":
-    for epoch in range(10):
-        feedback = FeedBack(1000, max_c=40, color=RGBColor(106,206,92))
-        eprint(f"Epoch {epoch + 1}/10", color=RGBColor(200,200,200))
-        for i in range(1000):
-            feedback(accuracy=((i + 1)/1000), loss=1.1234567)
-            time.sleep(0.01)
-        feedback(valid=True, accuracy=0.42, loss=1.1234567)
-        eprint()
+class Loading:
+    """
+    This class will display an animated loading for undefined progress.  Example:
+    Loading [|]    Time Elapsed: 3s
+
+    Examples:
+        >>># Initialise the object
+
+        >>>loader = Loading(icons=["[\\]", "[|]", "[/]", "[-]"])
+
+        >>># Run the long-running function and get the results
+
+        >>>results = loader("Loading", high_compute_fn, param1, param2=boo)
+
+        >>>print(results)
+    """
+
+    def __init__(self, *, icons: List[str] = ["", ".", "..", "..."],
+                 colors: List[Color] = [Color(34), Color(40), Color(46), Color(190), Color(226), Color(220),
+                                        Color(214), Color(208), Color(166), Color(202), Color(160), Color(124),
+                                        Color(88), Color(52), Color(15)],
+                 color_times: List[float] = [5 * (i + 1) for i in range(14)], delay: float = 0.5, sep: str = "\n",
+                 show_time: bool = True, console=sys.stdout):
+        """
+        This is where it is possible to set up the appearance of the loading.
+        :param icons: A list of successive strings to display during loading. Must have a len of at least 1.
+        :param colors: A list of color to change in function of elapsed time.  Must have a len of at least 1.
+        :param color_times: A list of timestamp in seconds over which the color of the text will change for the next
+                            color in the color argument.  Since the timestamp change for the NEXT color, this list
+                            must have a length shorter by 1 from colors.  Len = len(colors) - 1.
+        :param delay: The delay between each screen refresh.  The shorter the delay is, the quicker the refresh rate
+                        will be.
+        :param sep: The separator to be displayed at the end of the loading.
+        :param show_time: If True, it will display the elapsed time.
+        :param console: The console on which to write the loading.
+        """
+        assert len(colors) > 0
+        assert len(color_times) == len(colors) - 1, f"{len(color_times)}, {len(colors)}"
+        self.icons = icons
+        self.sep = sep
+        self.colors = colors
+        self.colors_times = color_times
+        self.console = console
+        self.delay = delay
+        self.show_time = show_time
+
+    def __call__(self, message: str, fn: Callable, *args, **kwargs):
+        """
+        This method is used to run a long-running function that doesn't or can't have a progress bar.  It will show
+        undefined loading progress.  (Example three dots moving.)
+
+        Note:
+            Using this function might add up to the delay(given in __init__) to runtime.
+        :param message: The message to be written
+        :param fn: The long-running function
+        :param args: The arguments of the function
+        :param kwargs: The keywords argument of the function.
+        :return: The return value of the function.
+        """
+
+        def loading(isLoading: List[bool]):
+            i = 0
+            color_idx = 0
+            start = datetime.now()
+            while isLoading[0]:
+                time_since_start = (datetime.now() - start).total_seconds()
+                if self.show_time:
+                    self.console.write(f"\r{self.colors[color_idx]}{message} "
+                                       f"{self.icons[i % len(self.icons)]}    "
+                                       f"Time Elapsed: {round(time_since_start)}s{ResetColor()}")
+                else:
+                    self.console.write(f"\r{self.colors[color_idx]}{message} "
+                                       f"{self.icons[i % len(self.icons)]}{ResetColor()}")
+                self.console.flush()
+                if color_idx < len(self.colors_times):
+                    if time_since_start > self.colors_times[color_idx]:
+                        color_idx += 1
+                time.sleep(self.delay)
+                i += 1
+            self.console.write(self.sep)
+            self.console.flush()
+
+        isLoading = [True]
+
+        def main(*args, **kwargs):
+            result = fn(*args, **kwargs)
+            isLoading[0] = False
+            return result
+
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            executor.submit(loading, isLoading)
+            results = main(*args, **kwargs)
+        return results
+
+
+

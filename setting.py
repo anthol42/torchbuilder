@@ -21,66 +21,66 @@ class File:
 
 filetree = {
     "data":{
-        "datasets":{"dataset.py":File(fileToCopy="resources/dataset.py"),"__init__.py":File()},
-        "dataloader.py":File(fileToCopy="resources/dataloader.py"),
+        "datasets":{"dataset.py":File(fileToCopy="ressources/dataset.py"),"__init__.py":File()},
+        "dataloader.py":File(fileToCopy="ressources/dataloader.py"),
         "__init__.py":File()
     },
     "models":{
-        "model.py":File(fileToCopy="resources/model.py"),
+        "model.py":File(fileToCopy="ressources/model.py"),
         "__init__.py":File()
     },
     "losses":{
-        "loss.py":File(fileToCopy="resources/loss.py"),
+        "loss.py":File(fileToCopy="ressources/loss.py"),
         "__init__.py":File()
     },
     "schedulers":{
-        "scheduler.py": File(fileToCopy="resources/scheduler.py"),
+        "scheduler.py": File(fileToCopy="ressources/scheduler.py"),
         "__init__.py": File()
     },
     "logs": {
     },
     "scripts":{
-        "train.sh":File(fileToCopy="resources/train.sh")
+        "train.sh":File(fileToCopy="ressources/train.sh")
     },
     "configs":{
-        "config.yml":File(fileToCopy="resources/config.yml")
+        "config.yml":File(fileToCopy="ressources/config.yml")
     },
     "optimizers":{
-        "optimizer.py":File(fileToCopy="resources/optimizer.py"),
+        "optimizer.py":File(fileToCopy="ressources/optimizer.py"),
         "__init__.py":File()
     },
     "metrics":{
         "metric.py":File(),
-        "dynamicMetric.py":File(fileToCopy="resources/dynamicMetric.py"),
+        "dynamicMetric.py":File(fileToCopy="ressources/dynamicMetric.py"),
         "__init__.py":File()
     },
     "training":{
-        "train_one_epoch.py":File(fileToCopy="resources/train_one_epoch.py"),
-        "validation_step.py":File(fileToCopy="resources/validation_step.py"),
-        "train.py":File(fileToCopy="resources/train.py"),
+        "train_one_epoch.py":File(fileToCopy="ressources/train_one_epoch.py"),
+        "validation_step.py":File(fileToCopy="ressources/validation_step.py"),
+        "train.py":File(fileToCopy="ressources/train.py"),
         "__init__.py":File()
     },
     "experiments":{
-        "experiment1.py":File(fileToCopy="resources/experiment1.py"),
-        "experiment1.md":File(fileToCopy="resources/experiment1.md"),
+        "experiment1.py":File(fileToCopy="ressources/experiment1.py"),
+        "experiment1.md":File(fileToCopy="ressources/experiment1.md"),
         "__init__.py":File()
     },
     "utils":{
-        "feedback.py":File(fileToCopy="resources/feedback.py"),
-        "checkpoint.py":File(fileToCopy="resources/checkpoint.py"),
-        "resultTable.py":File(fileToCopy="resources/resultTable.py"),
-        "color.py":File(fileToCopy="resources/color.py"),
-        "__init__.py":File(fileToCopy="resources/utils_init.py")
+        "feedback.py":File(fileToCopy="ressources/feedback.py"),
+        "checkpoint.py":File(fileToCopy="ressources/checkpoint.py"),
+        "resultTable.py":File(fileToCopy="ressources/resultTable.py"),
+        "color.py":File(fileToCopy="ressources/color.py"),
+        "__init__.py":File(fileToCopy="ressources/utils_init.py")
     },
     "results":{
-        "resultTable.json":File(fileToCopy="resources/resultTable.json")
+        "resultTable.json":File(fileToCopy="ressources/resultTable.json")
     },
     "notebooks":{},
     "saved_models":{},
-    "buildResultTable.py": File(fileToCopy="resources/buildResultTable.py"),
-    "main.py":File(fileToCopy="resources/main.py"),
-    "requirements.txt":File(fileToCopy="resources/requirements.txt"),
+    "buildResultTable.py": File(fileToCopy="ressources/buildResultTable.py"),
+    "main.py":File(fileToCopy="ressources/main.py"),
+    "requirements.txt":File(fileToCopy="ressources/requirements.txt"),
     "README.md":File(),
-    "make_computeCan_venv.sh":File(fileToCopy="resources/make_computecan_venv.sh"),
-    ".gitignore": File(fileToCopy="resources/gitignore.txt"),
+    "make_computeCan_venv.sh":File(fileToCopy="ressources/make_computecan_venv.sh"),
+    ".gitignore": File(fileToCopy="ressources/gitignore.txt"),
 }

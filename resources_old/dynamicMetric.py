@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class DynamicMetric:
     """
     Class that facilitate keeping track of metrics and display it.  Works well with the Feedback class.
@@ -25,7 +28,7 @@ class DynamicMetric:
         :param name: Name of the metric
         """
         self.name=name
-        self.values = []
+        self._values = []
         self.count = 0
         self.sum = 0
         self.avg = 0
@@ -36,13 +39,19 @@ class DynamicMetric:
         :param value: value of the step
         :return: None
         """
-        self.values.append(value)
+        self._values.append(value)
         self.count += 1
         self.sum += value
         self.avg = self.sum / self.count
 
+    def values(self) -> np.ndarray:
+        """
+        return values as numpy array
+        :return: values
+        """
+        return np.array(self._values)
     def __str__(self):
-        return self.avg
+        return str(self.avg)
 
 if __name__ == "__main__":
     import time
@@ -51,3 +60,5 @@ if __name__ == "__main__":
         loss(i)
         print(f"\r{loss}", end="")
         time.sleep(0.1)
+
+
