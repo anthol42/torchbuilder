@@ -1,5 +1,5 @@
 
-echo "building virtual env named venv with python $1"
+echo "building virtual env named venv with $1"
 
 module load python/$1
 
@@ -9,7 +9,7 @@ source venv/bin/activate
 
 pip install --no-index --upgrade pip
 
-pip install -r requirements.txt --no-index
+pip install -r requirement.txt --no-index
 
 echo ""
 

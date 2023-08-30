@@ -1,4 +1,8 @@
+from torch.optim.optimizer import Optimizer
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
+from utils import ConfigFile
+def make_scheduler(optimizer: Optimizer, config: ConfigFile):
 
-def make_scheduler(config):
-    return None
+    return CosineAnnealingWarmRestarts(optimizer, config["scheduler"]["n_iter_restart"],
+                                       config["scheduler"]["factor_increase"], eta_min=config["scheduler"]["min_lr"])
 

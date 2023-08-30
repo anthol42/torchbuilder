@@ -160,6 +160,45 @@ class StateManager:
         s = s.rstrip("\n")
         return s
 
+    def _extract_warns(self) -> dict:
+        # Check if some values were written more than they were read.  (This means that a value is ignored somewhere,
+        # which might lead to a bug, or confusion during code maintenance/review)
+        summary = self.summary()
+        warns = {}
+        for key, value in summary.items():
+            s = value.summary()
+            update, reads = s["updates"], s["reads"]
+            if reads < update:
+                warns[key] = (update, reads)
+        return warns
+
+    def has_warning(self) -> bool:
+        """
+        This function will verify if some variable are updated more than they are read.  If this happens, it would mean
+        that some operation's results are never used.  This could lead to hard to detect bugs or confusion during code
+        maintenance/review
+        Returns: True if there are such variable, False otherwise
+
+        """
+        warns = self._extract_warns()
+        return len(warns) > 0
+
+    def warning(self) -> str:
+        warns = self._extract_warns()
+        if len(warns) == 0:
+            return ""
+
+        if len(warns) == 1:
+            s = f"Warning, you have {len(warns)} variable that is updated more than it is read.  This could lead to " \
+                f"undesirable comportment:\n"
+        else:    # More than 1
+            s = f"Warning, you have {len(warns)} variable that are updated more than they are read.  This could " \
+                f"lead to undesirable comportment:\n"
+        for var_name, (u, r) in warns.items():
+            s += f"   -> [{var_name}] is updated {u} times, but is read only {r} times\n"
+        return s
+
+
 
 # This is the state of the application.
 State = StateManager()

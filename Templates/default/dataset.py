@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 
 
 def make_dataset(config):
-    training_data = datasets.FashionMNIST(
+    training_data = datasets.MNIST(
         root="data",
         train=True,
         download=True,
         transform=ToTensor()
     )
 
-    test_data = datasets.FashionMNIST(
+    test_data = datasets.MNIST(
         root="data",
         train=False,
         download=True,
@@ -21,7 +21,10 @@ def make_dataset(config):
     )
     return training_data, test_data
 
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
 
-s = "Hello" \
-    ""
-
+    train, test = make_dataset({})
+    img, label = train[0]
+    plt.imshow(img.squeeze(0))
+    plt.show()

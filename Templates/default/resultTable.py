@@ -444,9 +444,14 @@ class Table:
             category = rec[0]
             run_id = rec[1]
             ram_record_idx = [item["RunId"] for item in self.records[category]]
-            ram_idx = ram_record_idx.index(run_id)
-            if not self.records[category][ram_idx]["Filled"]:
-                rec[2] = "ignore"
+            try:
+                ram_idx = ram_record_idx.index(run_id)
+                if not self.records[category][ram_idx]["Filled"]:
+                    rec[2] = "ignore"
+            except ValueError:
+                # If a value error happens, it means that the record has already been ignored, so we do not ignore it
+                # again.
+                pass
         self._save()
 
     def handle_exception(self, excepthook):

@@ -1,10 +1,16 @@
 data:
-  batch_size: 64
+  batch_size: 512
   shuffle: True
 training:
-  num_epochs: 5
-  learning_rate: 0.003
-  weight_decay: 0.00005
-model_dir: "saved_models/classifier"
-model_name: "MNIST_Classifier"
-
+  num_epochs: 50
+  learning_rate: 0.0005
+  weight_decay:  0.0005
+model:
+  model_dir: "saved_models/classifier"
+  model_name: "MNIST_Classifier"
+  dropout2d: 0.4
+  dropout: 0.5
+scheduler:
+  n_iter_restart: 50
+  factor_increase: 1
+  min_lr: 0.00005

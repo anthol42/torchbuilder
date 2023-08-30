@@ -1,9 +1,0 @@
-data:
-  batch_size: 64
-  shuffle: True
-training_config:
-  num_epochs: 5
-  learning_rate: 0.003
-  weight_decay: 0.00005
-model_dir: "saved_models/classifier"
-model_name: "MNIST_Classifier"

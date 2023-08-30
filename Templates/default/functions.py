@@ -99,18 +99,22 @@ def get_trainable_weights(model: torch.nn.Module):
 def clean_dict(dictionary: dict):
     """
     The method remove the keys that have None as value.
+    It also removes default hyperparameters such as config, experiment and dropout
     WARNING: Dictionary must not have nested dictionaries !
     :param dictionary: The dictionary to clean
     :return: The cleaned dict
     """
     out = dictionary.copy()
+    out.pop("config")
+    out.pop("experiment")
+    out.pop("debug")
     for key, value in dictionary.items():
         if value is None:
             out.pop(key)
     return out
 
 
-def angular(a: np.ndarray, b: np.ndarray) -> float:
+def angular(a: torch.Tensor, b: torch.Tensor) -> float:
     """
     Calculate the angle between two multidimensional vectors.
     Formula: arccos(a.b/(||a|| * ||b||)) where . is dot product and * is a multiplication.
@@ -119,7 +123,7 @@ def angular(a: np.ndarray, b: np.ndarray) -> float:
     :return: The angle in radians
     """
     return np.arccos(
-        np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+        a @ b / (torch.linalg.vector_norm(a) * torch.linalg.vector_norm(b))
     )
 
 if __name__ == "__main__":
