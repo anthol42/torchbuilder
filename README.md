@@ -114,6 +114,8 @@ to write these information in markdown files with the same name as the experimen
 - [Color](Documentation/Color.md)
 - [FeedBack](Documentation/FeedBack.md)
 - [DynamicMetric](Documentation/DynamicMetric.md)
+- [ConfigFile](Documentation/ConfigFile.md)
+- [State](Documentation/State.md)
 
 ## Example
 When TorchBuilder builds a new project, it builds code to run a classification task on MNIST.
@@ -126,16 +128,32 @@ source venv/bin/activate
 ```
 3. Run the 'experiment1' with the 'config.yml' config file.
 ```commandline
-python main.py --experiment="experiment1" --config="configs/config.yml"
+python main.py --experiment="experiment1" --config="configs/config.yml" --debug=True
 ```
 4. There you go, you ran in few seconds a small computer vision project!
 
 **Note:**
-To read new kwarg, it is possible to add them in the main.py file.
+To add new kwarg, it is possible to add them in the main.py file.
 
-## The Architecture
-The application is almost entirely built in python with exceptions such as shell 
-and markdown.  It is easily customizable.
+## Customization
+To customize templates, you can create a project that you want it to be you new template,
+then you can compile it and Torchbuilder will add it to existing templates.  NOTE: The compiling process
+will save as a template everything!  Make sure there is no unwanted files such as python cache or
+system files because they will be included in you template.
 
-- To customize the file tree, modify the setting.py file located in the directory: ~/torchbuilder.
-- To modify boilerplates, modify the corresponding python file located in the ~/torchbuilder/ressources directory
+Synthax: torchbuilder {name of template} {source of template}
+
+Example:
+```commandline
+torchbuilder compile my_template /path/to/the/project/to/compile
+```
+
+To see existing templates:
+```commandline
+torchbuilder ls-templates
+```
+
+To remove a template:
+```commandline
+torchbuilder rm-template my_template
+```
