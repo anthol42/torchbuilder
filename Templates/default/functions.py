@@ -126,5 +126,17 @@ def angular(a: torch.Tensor, b: torch.Tensor) -> float:
         a @ b / (torch.linalg.vector_norm(a) * torch.linalg.vector_norm(b))
     )
 
+def get_device():
+    """
+    Find which device is the optimal device for training.  Priority order: cuda, mps, cpu
+    Returns: the device
+    """
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        return torch.device("mps")
+    else:
+        return torch.device("cpu")
+
 if __name__ == "__main__":
     pass

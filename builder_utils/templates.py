@@ -11,6 +11,11 @@ def compile(*args, **kwargs):
         eprint("Wrong syntax.  The good syntax is: torchbuilder compile <name> <source_dir>")
 
     name, source = args
+    if source[0:2] == "./":
+        source = source[1:]
+    elif source[0] != "/":
+        source = "/" + source
+    source = os.getcwd() + source
     torchbuilder_path = PurePath(os.path.dirname(__file__)).parent
     os.chdir(torchbuilder_path)
     assert name.isalnum(), f"Only alphabet character and digits are allowed for Template names! Got: {name}"

@@ -1,4 +1,4 @@
-from .resultTable import TableBuilder
+from utils import TableBuilder
 from pathlib import PurePath
 
 if __name__ == "__main__":

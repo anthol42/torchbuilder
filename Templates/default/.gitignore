@@ -164,8 +164,7 @@ cython_debug/
 
 # Ignore saved models
 saved_models/
-!saved_models
 
 logs/
-!logs
 
+results/

@@ -14,9 +14,12 @@ def train(model, optimizer, train_loader, val_loader, criterion, num_epochs, dev
     save_best_model = utils.SaveBestModel(
         config["model"]["model_dir"], metric_name="validation accuracy", model_name=config["model"]["model_name"],
         best_metric_val=float('-inf'), evaluation_method='MAX')
-
-    # For mixed precision training
-    scaler = torch.cuda.amp.GradScaler()
+    if str(device) == "cuda":
+        # For mixed precision training
+        scaler = torch.cuda.amp.GradScaler()
+    else:
+        # We cannot do mixed precision on cpu or mps
+        scaler = None
 
     n_step = len(train_loader)
     State.train_loss = np.empty((num_epochs, n_step))
@@ -27,7 +30,8 @@ def train(model, optimizer, train_loader, val_loader, criterion, num_epochs, dev
     for epoch in range(num_epochs):
         # Setup
         print(f"Epoch {epoch + 1}/{num_epochs}")
-        feedback = utils.FeedBack(len(train_loader), output_rate=50, color=Color(112))
+        output_rate = 25 if str(device) == 'cuda' else 1
+        feedback = utils.FeedBack(len(train_loader), output_rate=output_rate, color=Color(112))
 
         # Train the epoch and validate
         train_one_epoch(

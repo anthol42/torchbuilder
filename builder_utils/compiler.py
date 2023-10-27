@@ -165,7 +165,7 @@ class Compiler:
 
     def link(self, project: dict, project_flatten: dict, out_path: Union[str, PurePath]):
         """
-        This function will link every fiole together in an .index.json file in the .config directory
+        This function will link every file together in an .index.json file in the .config directory
         :param out_path: The output path
         :param project: The nested dict representing the project structure
                 :param outpath: The root of where the template is stores
@@ -184,6 +184,13 @@ class Compiler:
             json.dump(linked, file)
 
     def __call__(self, template_name: str, source_project: Union[str, PurePath]):
+        """
+        This function implement the whole pipeline to extract the tree of the project, write the files in the
+        Template's folder, then link files
+        :param template_name: The name to use for the template
+        :param source_project: The ABSOLUTE PATH of the source project to use as a template
+        :return: None
+        """
         torchbuilder_path = PurePath(os.path.dirname(__file__)).parent
         proj_flatten, txt, project = self.extract_tree(template_name,
                                                            source_project)

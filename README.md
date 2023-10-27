@@ -86,7 +86,10 @@ torchbuilder new project2 --venv=True
 ### Removing a project
 You can safely delete the project folder, and it's not more complicated than that!
 
-## Guidelines
+## Suggested Guidelines
+This section explains suggested guidelines to follow to work seamlessly with the default template and to understand the 
+idea behind the way the default template has been designed.  If you create you own template, we encourage you to make
+proposed guidelines to help people work with you template.
 ### Idea to keep in mind
 The idea to keep in mind when making a project is, one, be as organized as possible.  Two, EVERY results of
 different experiments must always be written down with information to reproduce the result.  Three, results must be
@@ -136,10 +139,10 @@ python main.py --experiment="experiment1" --config="configs/config.yml" --debug=
 To add new kwarg, it is possible to add them in the main.py file.
 
 ## Customization
-To customize templates, you can create a project that you want it to be you new template,
-then you can compile it and Torchbuilder will add it to existing templates.  NOTE: The compiling process
+To customize templates, you can create a project that you want to be your new template,
+then you can compile it and Torchbuilder will add it to the existing list of templates.  NOTE: The compiling process
 will save as a template everything!  Make sure there is no unwanted files such as python cache or
-system files because they will be included in you template.
+system files because they will be included in your template.
 
 Synthax: torchbuilder {name of template} {source of template}
 

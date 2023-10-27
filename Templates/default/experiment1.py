@@ -19,7 +19,7 @@ from configs.formats import config_format
 
 def experiment1(args):
     # Setup
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = utils.get_device()
     plt.style.use('torchbuilder_theme.mplstyle')
     hyper = utils.clean_dict(vars(args).copy())
 
@@ -70,6 +70,7 @@ def experiment1(args):
         "model_state_dict": model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
         "loss": State.train_loss,
+        "train_acc": State.train_accuracy,
         "val_loss": State.val_loss,
         "val_acc": State.val_accuracy
     }
