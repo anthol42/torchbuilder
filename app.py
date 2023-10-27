@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import PurePath
 from builder_utils.color import Color, ResetColor
-from builder_utils.templates import compile, ls_templates, rm_template
+from builder_utils.templates import compile, ls_templates, rm_template, show
 from builder_utils.sol_builder import make, new_proj
 from builder_utils.utils import enum_input, std_in, bool_input
 
@@ -145,6 +145,9 @@ Commands:
     
     >>> rm-template <name>
         ↳ This function will remove the given template.
+        
+    >>> show-template <name>
+        ↳ This will show the file tree that the template will build.
     
     >>> help
         ↳ This function will show this.
@@ -160,6 +163,7 @@ if __name__ == "__main__":
         "compile": compile,
         "ls-templates": ls_templates,
         "rm-template": rm_template,
+        "show-template": show,
         "make": make,
         "new" : new_proj
     }

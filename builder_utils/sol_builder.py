@@ -21,7 +21,12 @@ class Project:
                    "target directory")
 
         if not os.path.exists(f"{torchbuilder_path}/Templates/{template}"):
-            eprint(f"The requested template: {template} does not exist.")
+            if template == "default":
+                eprint("The default template does not exists.  It must have been removed.  You should compile a new "
+                       "template under the name of 'default' with a given project as default template.  See official "
+                       "documentation for the compile function for more details")
+            else:
+                eprint(f"The requested template: {template} does not exist.")
 
         if not os.path.exists(f"{torchbuilder_path}/Templates/{template}/.config/.index.json"):
             eprint(f"The requested template: {template} is broken since it does not contain a .config/.index.json file")

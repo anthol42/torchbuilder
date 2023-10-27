@@ -1,4 +1,5 @@
 # TorchBuilder
+**- Current version 0.2.1 -**  
 TorchBuilder is an easy-to-use tool designed to help you research faster and more efficiently.
 It is a tool that will create the whole folder tree of you project in only one terminal 
 command.  In addition, it implements a lot of boiler plates for you with the same command.
@@ -159,4 +160,17 @@ torchbuilder ls-templates
 To remove a template:
 ```commandline
 torchbuilder rm-template my_template
+```
+
+## See file tree and structure of a template
+To see the structure of a template, there is two ways:
+1. Go in the templates' folder and open the ```template_format.txt``` file.  The path should be: ```~/torchbuilder/Templates/{name}/template_format.txt```
+2. Use the command:
+```commandline
+torchbuilder show-template <name>
+```
+where name is the template name.
+Example:
+```commandline
+torchbuilder show-template default
 ```
