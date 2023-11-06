@@ -30,12 +30,18 @@ def train_one_epoch(dataloader, model, optimizer, criterion, epoch, device, feed
             loss.backward()
             optimizer.step()
 
+        State.global_step += 1
+
         if scheduler:
             scheduler.step()
 
         # Calculate metrics
+        accuracy = accuracy_score(y.cpu(), torch.argmax(pred, dim=1).detach().cpu().numpy())
         lossCounter(loss.item())
-        accCounter(accuracy_score(y.cpu(), torch.argmax(pred, dim=1).detach().cpu().numpy()))
+        accCounter(accuracy)
+
+        State.writer.add_scalar('Step_Loss', loss.item(), State.global_step)
+        State.writer.add_scalar('Step_Accuracy', accuracy, State.global_step)
 
         #Display metrics
         feedback(

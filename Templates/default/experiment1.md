@@ -2,12 +2,11 @@
 
 ## Description
 The goal of this experiment is to demonstrate the extraordinary capabilities of deep neural networks.
-We are going to train a simple model using CNN layers found as example on the official pytorch website.
-We are going to train this model on the MNIST dataset.
+We are going to train a simple model using CNN layers and linear layers.
 
 ## Hypothesis
-Results won't be that good since the model is quite inefficiently built.  In fact, it uses really few CNN parameters, 
-and a lot in dense layers.  In addition, it uses two layers of dropout one after the other which is useless.
+Since we are training and evaluating on the MNIST dataset, we expect results above 99% of accuracy since it is an easy 
+dataset.
 
 ## Results
 

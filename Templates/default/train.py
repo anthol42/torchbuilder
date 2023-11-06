@@ -10,6 +10,7 @@ from utils import Color
 
 
 def train(model, optimizer, train_loader, val_loader, criterion, num_epochs, device, config, scheduler=None):
+    State.global_step = 0
     # Checkpoints
     save_best_model = utils.SaveBestModel(
         config["model"]["model_dir"], metric_name="validation accuracy", model_name=config["model"]["model_name"],
@@ -40,6 +41,12 @@ def train(model, optimizer, train_loader, val_loader, criterion, num_epochs, dev
         validation_step(
             model, val_loader, criterion, epoch, device, feedback
         )
+
+        State.writer.add_scalar('Loss/train', State.train_loss[epoch].mean(), epoch)
+        State.writer.add_scalar('Loss/Validation', State.val_loss[epoch], epoch)
+
+        State.writer.add_scalar('Accuracy/train', State.train_accuracy[epoch].mean(), epoch)
+        State.writer.add_scalar('Accuracy/Validation', State.val_accuracy[epoch], epoch)
 
         # Checkpoint
         save_best_model(State.val_accuracy[epoch], epoch, model, optimizer, criterion)

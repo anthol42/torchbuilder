@@ -1,4 +1,5 @@
 import torch
+from torch.utils.tensorboard import SummaryWriter
 import torchvision
 import numpy as np
 from data.dataloader import make_dataloader
@@ -32,7 +33,11 @@ def experiment1(args):
     rtable = Table("results/resultTable.json")
     sys.excepthook = rtable.handle_exception(sys.excepthook)
     resultSocket = rtable.registerRecord(__name__, args.config, category=None, **hyper)
+    run_id = resultSocket.get_run_id()
+    config["model"]["model_dir"] = f'{config["model"]["model_dir"]}/{run_id}'
 
+    comment = '' if hyper.get("comment") is None else hyper.get("comment")
+    State.writer = SummaryWriter(comment)
     # Loading the data
     train_loader, val_loader, test_loader = make_dataloader(config=config)
     print("Data loaded successfully!")
@@ -83,11 +88,15 @@ def experiment1(args):
     print(config.stats())
     print(f"{utils.Color(11)}{State.warning()}{utils.ResetColor()}")
 
+    State.writer.flush()
+    State.writer.close()
+
     # Save results
     if DEBUG:
         resultSocket.ignore()
     else:
-        resultSocket.write(accuracy=float(State.val_accuracy.mean()), crossEntropy=float(State.val_loss.mean()))
+        best_idx = State.val_accuracy.argmax()
+        resultSocket.write(accuracy=float(State.val_accuracy[best_idx]), crossEntropy=float(State.val_loss[best_idx]))
         rtable.toTxt()
 
 

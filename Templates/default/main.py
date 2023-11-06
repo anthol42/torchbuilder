@@ -18,6 +18,7 @@ from experiments.experiment1 import experiment1
 parser.add_argument("--experiment", required=True, type=str)
 parser.add_argument("--config", required=True, type=str)
 parser.add_argument("--debug", required=False, type=str, default="False")
+parser.add_argument("--comment", required=False, type=str, default=None)
 
 
 # ######################################################################################################################
