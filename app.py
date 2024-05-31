@@ -111,6 +111,17 @@ class App:
             if arg.startswith("--") and "=" in arg:
                 idx = arg.find("=")
                 key, value = arg[:idx].replace("--", ""), arg[idx + 1:]
+                if value == "True":
+                    value = True
+                elif value == "False":
+                    value = False
+                elif value[0] == "'" and value[-1] == "'":
+                    value = value[1:-1]
+                elif value[0] == '"' and value[-1] == '"':
+                    value = value[1:-1]
+
+                if ";" in value:
+                    value = value.split(";")
                 kwargs[key] = value
             else:
                 args.append(arg)
@@ -137,8 +148,9 @@ Commands:
     >>> new <proj_name> --venv=True --template=default
         ↳ This function will create a new project.
     
-    >>> compile <name> <source>
+    >>> compile <name> <source> --ignore=<list_of_regex>
         ↳ This function will build a template from a project (source).
+        ↳ Example: torchbuilder compile my_template ./my_project --ignore='.*\.txt;data/' # ignore all txt files and the data directory.
     
     >>> ls-templates
         ↳ This function will print every templates available.

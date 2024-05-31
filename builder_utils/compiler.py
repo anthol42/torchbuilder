@@ -3,12 +3,25 @@ import sys
 import glob
 from pathlib import PurePath
 import json
+from typing import Union, Tuple, List
+import re
 
-from typing import Union, Tuple
+IGNORED_DIR = {"__pycache__", ".git", ".idea", ".vscode", ".config", ".cache", "venv", "env", ".venv", ".env"}
+HIDDEN_FILE_KEPT = {".gitignore", ".gitkeep", ".env"}
 
+
+def isMatch(s: str, regex: List[str]):
+    regex = [re.compile(r) for r in regex]
+    for r in regex:
+        if r.match(s):
+            return True
+    return False
 
 class _Project:
-    def __init__(self, name: str, path: Union[str, PurePath]):
+    def __init__(self, name: str, path: Union[str, PurePath],
+                 ignore_files: List[str], ignore_dirs: List[str]):
+        ignore_dirs = [i[:-1] for i in ignore_dirs]    # Remove the trailing '/'
+        ignore_dirs += list(ignore_dirs)
         self.name = name
         self.path = path
 
@@ -16,8 +29,15 @@ class _Project:
         self._childs = {}
         if len(child_dirs) > 0:
             for child_dir in child_dirs:
-                self._childs[child_dir.name] = _Project(child_dir.name, str(child_dir))
-        self.files = {PurePath(f.path).name: f.path for f in os.scandir(path) if f.is_file()}
+                if not child_dir.name in IGNORED_DIR and not isMatch(child_dir.name, ignore_dirs):
+                    self._childs[child_dir.name] = _Project(child_dir.name, str(child_dir), ignore_files, ignore_dirs)
+        self.files = {}
+        for f in os.scandir(path):
+            if f.is_file():
+                if isMatch(f.name, ignore_files):
+                    continue
+                if not f.name.startswith(".") or f.name in HIDDEN_FILE_KEPT:
+                    self.files[PurePath(f.path).name] = f.path
     @staticmethod
     def _increment_name(name):
         # First, extract extension
@@ -110,15 +130,18 @@ class Compiler:
         pass
 
     @staticmethod
-    def extract_tree(template_name: str, base_path: Union[str, PurePath]) -> Tuple[dict, str, dict]:
+    def extract_tree(template_name: str, base_path: Union[str, PurePath],
+                     ignore_files: List[str], ignore_dirs: List[str]) -> Tuple[dict, str, dict]:
         """
         This method will flatten the project's complex tree structure and convert it to a non-nested dictionary.
         In addition, it will convert the nested tree structure to a string for easy visualization
         :param template_name: The name of the template
         :param base_path: The base path of the project
+        :param ignore_files: The list of regex expression defining the files to ignore
+        :param ignore_dirs: The list of regex expression defining the directories to ignore (Expression ends by '/')
         :return: The flatten tree, the tree as a string, and the tree mapped as a nested dict
         """
-        project = _Project(template_name, base_path)
+        project = _Project(template_name, base_path , ignore_files, ignore_dirs)
         return project.flatten(), str(project), project.dict()
 
     @staticmethod
@@ -183,17 +206,21 @@ class Compiler:
         with open(f"Templates/{out_path}/.config/.index.json", "w") as file:
             json.dump(linked, file)
 
-    def __call__(self, template_name: str, source_project: Union[str, PurePath]):
+    def __call__(self, template_name: str, source_project: Union[str, PurePath], ignore_files: List[str], ignore_dirs: List[str]):
         """
         This function implement the whole pipeline to extract the tree of the project, write the files in the
         Template's folder, then link files
         :param template_name: The name to use for the template
         :param source_project: The ABSOLUTE PATH of the source project to use as a template
+        :param ignore_files: The list of regex expression defining the files to ignore
+        :param ignore_dirs: The list of regex expression defining the directories to ignore (Expression ends by '/')
         :return: None
         """
         torchbuilder_path = PurePath(os.path.dirname(__file__)).parent
         proj_flatten, txt, project = self.extract_tree(template_name,
-                                                           source_project)
+                                                           source_project,
+                                                           ignore_files,
+                                                           ignore_dirs)
         self.write_files(f"{torchbuilder_path}/Templates/{template_name}", proj_flatten, txt)
         self.link(project, proj_flatten, f"{template_name}")
 

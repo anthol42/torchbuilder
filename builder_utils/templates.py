@@ -33,19 +33,29 @@ def compile(*args, **kwargs):
 
     name, source = args
     if source[0:2] == "./":
+        absolute = False
         source = source[1:]
     elif source[0] != "/":
+        absolute = False
         source = "/" + source
-    source = os.getcwd() + source
+    else:
+        absolute = True
+    if not absolute:
+        source = os.getcwd() + source
     torchbuilder_path = PurePath(os.path.dirname(__file__)).parent
     os.chdir(torchbuilder_path)
-    assert name.isalnum(), f"Only alphabet character and digits are allowed for Template names! Got: {name}"
+    if not name.isalnum():
+        eprint(f"Only alphabet character and digits are allowed for Template names! Got: {name}")
+
+    ignore = kwargs.get("ignore", [])    # Regex expression to ignore files and directories
+    ignore_dir = [i for i in ignore if i[-1] == "/"]
+    ignore_files = [i for i in ignore if i[-1] != "/"]
     #Step 2: compile
     compiler = Compiler()
     if os.path.exists(f"./Templates/{name}"):
          eprint("The template already exists.  You cannot create a template with the same name as an already "
                 "existing template.  Remove the old one before creating a new one.")
-    compiler(name, source)
+    compiler(name, source, ignore_files, ignore_dir)
 
 def ls_templates(*args, **kwargs):
     torchbuilder_path = PurePath(os.path.dirname(__file__)).parent
