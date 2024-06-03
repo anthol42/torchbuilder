@@ -161,6 +161,12 @@ Commands:
     >>> show-template <name>
         ↳ This will show the file tree that the template will build.
     
+    >>> export-template <name> <path>
+        ↳ This function will export the template to the given path.  (The path must be a directory, not a filename)
+    
+    >>> import-template <path>
+        ↳ This function will import the template from the given path.  It must be a archive made with 'export-template'.
+    
     >>> help
         ↳ This function will show this.
     
