@@ -4,6 +4,7 @@ from .utils import eprint
 from .color import Color, ResetColor
 import shutil
 import re
+import tarfile
 
 import os
 from pathlib import PurePath
@@ -89,3 +90,42 @@ def rm_template(*args, **kwargs):
     else:
         print("aborted")
 
+
+def export_template(*args, **kwargs):
+    torchbuilder_path = PurePath(os.path.dirname(__file__)).parent
+
+    # Step 1: Verify input
+    if len(args) != 2:
+        eprint("Wrong syntax.  The good syntax is: torchbuilder export-template <name> <destination>")
+    name, destination = args
+    if destination[0:2] == "./":
+        absolute = False
+        destination = destination[1:]
+    elif destination[0] != "/":
+        absolute = False
+        destination = "/" + destination
+    else:
+        absolute = True
+    if not absolute:
+        destination = os.getcwd() + destination
+
+    os.chdir(torchbuilder_path)
+
+    if not name.isalnum():
+        eprint("Wrong template.  Template names must be composed of alphabet character or digits.")
+
+    if not os.path.exists(f"./Templates/{name}"):
+        eprint("Wrong template.  The template does not exist.")
+
+    if not os.path.exists(PurePath(destination).parent):
+        eprint("The destination directory does not exist.")
+
+    if not os.path.exists(destination):
+        os.mkdir(destination)
+
+    # Compress the template
+    with tarfile.open(f"{destination}/{name}.tar.gz", mode="w:gz") as tar:
+        tar.add(f"./Templates/{name}", arcname=name)
+
+    print(f"Template {name} successfully exported to {destination}/{name}.tar.gz")
+    exit(0)

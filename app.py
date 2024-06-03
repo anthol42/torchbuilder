@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import PurePath
 from builder_utils.color import Color, ResetColor
-from builder_utils.templates import compile, ls_templates, rm_template, show
+from builder_utils.templates import compile, ls_templates, rm_template, show, export_template
 from builder_utils.sol_builder import make, new_proj
 from builder_utils.utils import enum_input, std_in, bool_input
 
@@ -150,7 +150,7 @@ Commands:
     
     >>> compile <name> <source> --ignore=<list_of_regex>
         ↳ This function will build a template from a project (source).
-        ↳ Example: torchbuilder compile my_template ./my_project --ignore='.*\.txt;data/' # ignore all txt files and the data directory.
+        ↳ Example: torchbuilder compile my_template ./my_project --ignore='.*\\.txt;data/' # ignore all txt files and the data directory.
     
     >>> ls-templates
         ↳ This function will print every templates available.
@@ -177,7 +177,8 @@ if __name__ == "__main__":
         "rm-template": rm_template,
         "show-template": show,
         "make": make,
-        "new" : new_proj
+        "new" : new_proj,
+        "export-template": export_template,
     }
     app = App(commands)
     app()
