@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import PurePath
 from builder_utils.color import Color, ResetColor
-from builder_utils.templates import compile, ls_templates, rm_template, show, export_template
+from builder_utils.templates import compile, ls_templates, rm_template, show, export_template, import_template
 from builder_utils.sol_builder import make, new_proj
 from builder_utils.utils import enum_input, std_in, bool_input
 
@@ -179,6 +179,7 @@ if __name__ == "__main__":
         "make": make,
         "new" : new_proj,
         "export-template": export_template,
+        "import-template": import_template
     }
     app = App(commands)
     app()

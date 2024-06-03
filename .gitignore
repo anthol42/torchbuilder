@@ -170,3 +170,6 @@ logs/
 !logs
 
 .idea
+
+tmp/
+tmp*
