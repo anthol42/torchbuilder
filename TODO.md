@@ -6,7 +6,10 @@ Current version: **0.2.2**
 - [X] Add a way to clean hidden files and Python cache files and folders this should remove venv, all cache files, pycache and 
 folders (except gitignore) 
 - [X] Add a way to export and import templates
-- [ ] Make templating dynamic (Possibility to link module files or external files -> the compileing process will make them part of the template (Static))
+- [ ] Make templating dynamic (Possibility to link module files or external files -> the compiling process will make them part of the template (Static))
+- [ ] Make sub-template rendering: Possibility to add a token that is replaced at build time (When building the template  - inference)  
+Example: Format the title of a readme with the name of the project
+
 - [ ] Make app installable by pip and make the utils such as color, resultTable, etc available from the package (And linkable in templates)
 - [ ] Make a hub of templates (Repo github) where people can submit their templates and others can download them.
 - [ ] Add update method in torchbuilder that will clone the repo and update torchbuilder while keeping templates
