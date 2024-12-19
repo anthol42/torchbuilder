@@ -6,8 +6,8 @@ from .color import Color, ResetColor
 log = logger.Logger(console=True, T=logger.LoggerType.INFO, name="INFO", logColor=None)
 log.config(show_name=True, show_time=True, show_type=False, show_origin=False,
               name_formatter=f"<CAPS>{Color(40)}[{'{}'}]{ResetColor()}",
-              time_formatter=lambda x: (f'{Color(244)}{x.strftime("%Y-%m-%d %H:%M:%S")}{ResetColor()}', False),
-              start_sep=" ")
+              time_formatter=lambda x: (f'{Color(244)}[{x.strftime("%Y-%m-%d %H:%M:%S")}]{ResetColor()}', True),
+              start_sep=" ", end_sep="   ")
 warn = logger.Logger(console=True, T=logger.LoggerType.WARNING, name="WARNING", logColor=None)
 warn.config(show_name=True, show_time=True, show_type=False, show_origin=True,
               name_formatter=f"<CAPS>{Color(226)}[{'{}'}]{ResetColor()}",

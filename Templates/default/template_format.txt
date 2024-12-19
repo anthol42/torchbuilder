@@ -1,5 +1,5 @@
-newTemplate:
-[<38 files>--<15 directories>]
+default:
+[<41 files>--<16 directories>]
   make_computeCan_venv.sh
   requirements.txt
   torchbuilder_theme.mplstyle
@@ -62,6 +62,11 @@ newTemplate:
   scripts:
   [<1 file>--<0 directory>]
     train.sh
+  data:
+  [<3 files>--<0 directory>]
+    __init__.py
+    dataset.py
+    dataloader.py
   notebooks:
   [<0 file>--<0 directory>]
   schedulers:
