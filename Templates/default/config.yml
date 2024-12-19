@@ -7,7 +7,7 @@ training:
   weight_decay:  0.0005
 model:
   model_dir: "saved_models/classifier"
-  model_name: "MNIST_Classifier"
+  name: "MNIST_Classifier"
   dropout2d: 0.4
   dropout: 0.5
 scheduler:

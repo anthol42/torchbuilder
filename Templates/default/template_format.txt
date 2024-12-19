@@ -1,77 +1,70 @@
-default:
-[<41 files>--<17 directories>]
+newTemplate:
+[<38 files>--<15 directories>]
   make_computeCan_venv.sh
-  torchbuilder_theme.mplstyle
-  .gitignore
   requirements.txt
-  main.py
+  torchbuilder_theme.mplstyle
+  tmp.py
   README.md
-  results:
-  [<1 file>--<0 directory>]
-    resultTable.json
-  schedulers:
+  .gitignore
+  main.py
+  metrics:
   [<2 files>--<0 directory>]
-    scheduler.py
     __init__.py
-  optimizers:
-  [<2 files>--<0 directory>]
-    optimizer.py
-    __init__.py
-  builders:
-  [<1 file>--<0 directory>]
-    buildResultTable.py
-  utils:
-  [<8 files>--<0 directory>]
-    functions.py
-    color.py
-    checkpoint.py
-    resultTable.py
-    __init__.py
-    configFile.py
-    feedback.py
-    stateManager.py
-  experiments:
-  [<3 files>--<0 directory>]
-    experiment1.md
-    experiment1.py
-    __init__.py
+    metric.py
   losses:
   [<2 files>--<0 directory>]
     __init__.py
     loss.py
-  notebooks:
+  builders:
+  [<1 file>--<0 directory>]
+    buildResultTable.py
+  experiments:
+  [<3 files>--<0 directory>]
+    experiment1.py
+    __init__.py
+    experiment1.md
+  training:
+  [<2 files>--<0 directory>]
+    __init__.py
+    train.py
+  utils:
+  [<11 files>--<0 directory>]
+    functions.py
+    color.py
+    checkpoint.py
+    feedback.py
+    configFile.py
+    bin.py
+    __init__.py
+    logger.py
+    dynamicMetric.py
+    stateManager.py
+    resultTable.py
+  models:
+  [<2 files>--<0 directory>]
+    __init__.py
+    model.py
+  optimizers:
+  [<2 files>--<0 directory>]
+    __init__.py
+    optimizer.py
+  results:
+  [<1 file>--<0 directory>]
+    resultTable.json
+  saved_models:
+  [<0 file>--<0 directory>]
+  logs:
   [<0 file>--<0 directory>]
   configs:
   [<2 files>--<0 directory>]
     formats.py
     config.yml
-  logs:
-  [<0 file>--<0 directory>]
   scripts:
   [<1 file>--<0 directory>]
     train.sh
-  metrics:
-  [<3 files>--<0 directory>]
-    dynamicMetric.py
-    metric.py
-    __init__.py
-  data:
-  [<4 files>--<1 directory>]
-    dataloader.py
-    __init__.py
-    datasets:
-    [<2 files>--<0 directory>]
-      __init__.py
-      dataset.py
-  models:
-  [<2 files>--<0 directory>]
-    model.py
-    __init__.py
-  training:
-  [<4 files>--<0 directory>]
-    train.py
-    train_one_epoch.py
-    __init__.py
-    validation_step.py
-  saved_models:
+  notebooks:
   [<0 file>--<0 directory>]
+  schedulers:
+  [<2 files>--<0 directory>]
+    __init__.py
+    scheduler.py

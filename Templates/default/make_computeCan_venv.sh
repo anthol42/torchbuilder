@@ -9,7 +9,7 @@ source venv/bin/activate
 
 pip install --no-index --upgrade pip
 
-pip install -r requirement.txt --no-index
+pip install -r requirements.txt --no-index
 
 echo ""
 

@@ -1,6 +1,6 @@
 import yaml
 from .functions import verify_config
-
+from .color import Color, ResetColor
 
 class _Config:
     def __init__(self, internal: dict, name: str = ""):
@@ -12,6 +12,9 @@ class _Config:
             if isinstance(value, dict):
                 self.__internal[key] = _Config(self.__internal[key], name=key)
             self.__running_stats[key] = {"write": 1, "read": 0}
+
+    def __contains__(self, item):
+        return item in self.__internal
 
     def __getitem__(self, key):
         data = self.__internal[key]
@@ -29,12 +32,15 @@ class _Config:
             else:
                 self.__running_stats[key] = {"write": 1, "read": 0}
 
-    @property
-    def __dict__(self):
-        """
-        This method is used to be compatible with the vars() function
-        :return: A dictionary representation of itself
-        """
+    # @property
+    # def __dict__(self):
+    #     """
+    #     This method is used to be compatible with the vars() function
+    #     :return: A dictionary representation of itself
+    #     """
+    #     return self._todict()
+
+    def dict(self):
         return self._todict()
 
     def _stat_txt(self, offset: int = 2):
@@ -216,6 +222,38 @@ class ConfigFile(_Config):
             verify_config(config, config_format, verify_path=verify_path)
 
         super().__init__(config)
+
+    def override_config(self, kwargs: dict, exit_on_error: bool = True):
+        """
+        Override corresponding parameters in the config file.
+        Key format:
+            config.key1.key2.<...>
+        Corresponding to:
+            key1:
+                key2:
+                    ...
+        :param kwargs: The keys specifying the path to the parameter to change
+        :param exit_on_error: Whether to warn the user and exit if a key is invalid or ignore.
+        :return: None
+        """
+        key: str
+        for key, value in kwargs.items():
+            if key.startswith("config."):
+                path = key[7:].split(".")
+                sub_config = self
+                for sub_key in path[:-1]:
+                    if sub_key in sub_config:
+                        sub_config = sub_config[sub_key]
+                    else:
+                        if exit_on_error:
+                            print(f"{Color(203)}Invalid key: {sub_key} at {key}!{ResetColor()}")
+                            exit(-1)
+                if path[-1] in sub_config:
+                    sub_config[path[-1]] = value
+                else:
+                    if exit_on_error:
+                        print(f"{Color(203)}Invalid key: '{path[-1]}' at '{key}'!  Impossible to override the config.{ResetColor()}")
+                        exit(-1)
 
 
 if __name__ == "__main__":

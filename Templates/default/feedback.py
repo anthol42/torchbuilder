@@ -3,7 +3,7 @@ from datetime import datetime
 import sys
 from .color import ResetColor, Color
 import math
-from metrics.dynamicMetric import DynamicMetric
+from utils.dynamicMetric import DynamicMetric
 from typing import List, Callable
 from concurrent.futures import ThreadPoolExecutor
 

@@ -10,7 +10,7 @@ config_format = {
     },
     "model":{
         "model_dir": "opath",
-        "model_name": "opath",
+        "name": "opath",
         "dropout2d": float,
         "dropout": float
     },

@@ -21,6 +21,9 @@ we can use github api for this (https://api.github.com/repos/{owner}/{repo}/cont
   - [ ] include wall time in result table
   - [ ] Add a way to remove records from result table
   - [ ] Add way to see stats of resultTable (ex: categories, number of elements per category)
-  - [ ] Add a way to access élément by runID with getitem magic function.  Maybe can delete or set.
+  - [ ] Add a way to access elements by runID with getitem magic function.  Maybe can delete or set.
 - [ ] Create a new template using torch lightning
 - [ ] Create a single page template using keras 3
+- [ ] Feedback API:
+  - [ ] Make it multiprocess proof (Reporting thread and worker threads)
+  - [ ] Then, make the default template capable of running on multiple gpus easily
