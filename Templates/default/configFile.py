@@ -1,6 +1,145 @@
 import yaml
-from .functions import verify_config
 from .color import Color, ResetColor
+import os
+import glob
+from typing import *
+
+class InvalidConfigFileException(Exception):
+    pass
+
+def _recursive_mapper(sub_cfg: dict, sub_format: dict, path: str, overrides: dict):
+    for key, value in sub_format.items():
+        if isinstance(value, ProfileType):
+            if key not in sub_cfg:
+                raise KeyError(f"Missing key {key} in config file.")
+            overrides[f'{path}.{key}'] = sub_cfg[key] # List of items
+        elif isinstance(value, dict):
+            _recursive_mapper(sub_cfg[key], value, f"{path}.{key}", overrides)
+
+def map_profiles(config: dict, config_format: dict):
+    overrides = {}
+    _recursive_mapper(config, config_format, "", overrides)
+    overrides = {k[1:]: v for k, v in overrides.items()}
+    return overrides
+
+def _recursive_check(config, expected, verify_path, verify_out_path):
+    if config.keys() != expected.keys():
+        raise InvalidConfigFileException(f"Config file is invalid. missing keys: "
+                                         f"{set(expected.keys()) - set(config.keys())} || and have these key that are "
+                                         f"unknown: {' '.join(set(config.keys()) - set(expected.keys()))}")
+    else:
+        for key, value in expected.items():
+            if isinstance(value, str):
+                if value == "ipath" and verify_path:
+                    if "/*" in config[key]:
+                        if len(glob.glob(config[key], recursive = True)) == 0:
+                            raise InvalidConfigFileException(f"Config file contains invalid input path at key: {key}")
+                    else:
+                        if not os.path.exists(config[key]):
+                            raise InvalidConfigFileException(f"Config file contains invalid input path at key: {key}")
+                elif value == "opath" and verify_out_path:
+                    if not os.path.exists(config[key]):
+                        raise InvalidConfigFileException(f"Config file contains invalid output path at key: {key}")
+            elif isinstance(value, dict):
+                _recursive_check(config[key], expected[key], verify_path, verify_out_path)
+            elif isinstance(value, ProfileType):
+                for item in config[key]:
+                    if not isinstance(item, value.T):
+                        raise InvalidConfigFileException(f"Config file has value of type {type(item)} where it is "
+                                                 f"supposed to be {value.T} at key {key}.")
+            elif isinstance(value, tuple):
+                isOk = False
+                for el_type in value:
+                    if isinstance(config[key], el_type):
+                        isOk = True
+
+                if not isOk:
+                    raise InvalidConfigFileException(f"Config file has value of type {type(config[key])} where it is "
+                                                 f"supposed to be {value} at key {key}.")
+            else:
+                if not isinstance(config[key], value) and config[key] is not None:
+                    raise InvalidConfigFileException(f"Config file has value of type {type(config[key])} where it is "
+                                                    f"supposed to be {value} at key {key}.")
+
+
+
+def verify_config(config: dict, expected: dict, verify_path=True, verify_out_path=False):
+    """
+    This function will raise an exception if the given config file does not conform to the expected config structure.
+    :param config: The parsed yaml config file
+    :param expected: The expected structure (Dict with classes as value of keys)
+    :return:
+    """
+    _recursive_check(config, expected, verify_path, verify_out_path)
+
+def Profile(arg: Union[str, type]):
+    if isinstance(arg, str):
+        return ProfileInstance(arg)
+    else:
+        return ProfileType(arg)
+
+class ProfileType:
+    def __init__(self, T: type):
+        self.T = T
+class ProfileInstance:
+    def __init__(self, name: str):
+        self.NAME = name
+        self.ID = None
+        self.OVERRIDE = None
+
+    def set_id(self, idx: int):
+        self.ID = idx
+        return self
+
+    def set_override(self, override: dict):
+        self.OVERRIDE = override
+        return self
+
+    def get_override(self):
+        if self.OVERRIDE is None:
+            raise RuntimeError(f"Attempting to read a profile override that hasnot been set for {self.NAME} profile.")
+        return {f'config.{k}':v for k, v in self.OVERRIDE.items()}
+
+    def __str__(self):
+        return f"ConfigProfile<{self.NAME} [{self.ID}]>"
+
+class ProfileList:
+    def __init__(self, *args):
+        if len(args) == 0:
+            self.PROFILES = []
+        elif len(args) == 1:
+            self.PROFILES = [p.set_id(i) for i, p in enumerate(args[0])]
+        else:
+            self.PROFILES = [p.set_id(i) for i, p in enumerate(args)]
+
+        self.name2idx = {p.NAME: i for i, p in enumerate(self.PROFILES)}
+
+    def feed_overrides(self, overrides: dict):
+        formatted_overrides = [dict() for _ in range(len(self))]
+        for path, values in overrides.items():
+            for i in range(len(self)):
+                formatted_overrides[i][path] = values[i]
+
+        for i, profile in enumerate(self.PROFILES):
+            profile.set_override(formatted_overrides[i])
+
+    def __len__(self):
+        return len(self.PROFILES)
+
+    def __getitem__(self, item: Union[str, int]):
+        if isinstance(item, str):
+            item = self.name2idx.get(item, None)
+            if item is None:
+                raise KeyError(f"Profile with name {item} not found in lsit of profiles. Got: {self}")
+        if len(self.PROFILES) <= item:
+            raise IndexError(f"Index {item} out of range for list of profiles. Got: {len(self)} profiles")
+        return self.PROFILES[item]
+
+    def __str__(self):
+        if len(self.PROFILES) < 10:
+            return f'PROFLES[{", ".join(p.NAME for p in self.PROFILES)}]'
+        else:
+            return f'PROFILES[{self.PROFILES[0].NAME}, {self.PROFILES[1].NAME}, ..., {self.PROFILES[-2].NAME}, {self.PROFILES[-1].NAME}]'
 
 class _Config:
     def __init__(self, internal: dict, name: str = ""):
@@ -31,6 +170,7 @@ class _Config:
                 self.__running_stats[key]["write"] += 1
             else:
                 self.__running_stats[key] = {"write": 1, "read": 0}
+                self.__internal[key] = value
 
     # @property
     # def __dict__(self):
@@ -207,13 +347,17 @@ class ConfigFile(_Config):
             'opath': Meaning output path.  This means that the expected value is a path, but that will be used as
                         output.  So it won't be verifed.
     """
-    def __init__(self, file_path: str, config_format: dict = None, verify_path: bool = True):
+    def __init__(self, file_path: str, config_format: dict = None, verify_path: bool = True,
+                 profile_mapping: dict = None, profiles: List[str] = tuple()):
         """
 
         :param file_path: The path to the config file.
         :param config_format: A dictionary analog to the expected config file, but the values are the expected type
                               instead of ral values.
         :param verify_path: Whether to verify input path.
+        :param profile_mapping: A dictionary mapping the profile name to the profile object. If config format is passed,
+        this parameter is ignored. (The profile types must be set in the config_format.
+        :param profiles: A list of profiles to use.  If config format is passed, this parameter is ignored.
         """
         with open(file_path, 'r') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
@@ -221,7 +365,30 @@ class ConfigFile(_Config):
         if config_format is not None:
             verify_config(config, config_format, verify_path=verify_path)
 
+        if len(profiles) > 0:
+            profiles = ProfileList(Profile(s) for s in profiles)
+            if config_format is not None:
+                overrides = map_profiles(config, config_format)
+            else:
+                overrides = map_profiles(config, profile_mapping)
+            profiles.feed_overrides(overrides)
+            self.profiles = profiles
+        else:
+            self.profiles = None # None if no profiles
         super().__init__(config)
+
+        # Default profile is 0
+        self.change_profile(0)
+
+    def change_profile(self, item: Union[str, int]):
+        """
+        Change the profile to the given profile.
+        :param item: The index or the name of the profile.
+        :return: None
+        """
+        if self.profiles is None:
+            raise RuntimeError("No profiles were set in the config file.")
+        self.override_config(self.profiles[item].get_override())
 
     def override_config(self, kwargs: dict, exit_on_error: bool = True):
         """
@@ -239,7 +406,7 @@ class ConfigFile(_Config):
         key: str
         for key, value in kwargs.items():
             if key.startswith("config."):
-                path = key[7:].split(".")
+                path = key.lstrip("config").split(".")[1:]
                 sub_config = self
                 for sub_key in path[:-1]:
                     if sub_key in sub_config:
@@ -255,6 +422,12 @@ class ConfigFile(_Config):
                         print(f"{Color(203)}Invalid key: '{path[-1]}' at '{key}'!  Impossible to override the config.{ResetColor()}")
                         exit(-1)
 
+    def __str__(self):
+        s = super().__str__()
+        if self.profiles is not None:
+            return f'PROFILES: {self.profiles}\n\n{s}'
+        else:
+            return f'PROFILES: NO PROFILES FOUND\n\n{s}'
 
 if __name__ == "__main__":
     config_format = {
