@@ -1,1 +1,0 @@
-{"metadata": {"name": "resultTable.json", "timeCreated": "2024-12-18 21:34:38.516233", "format": "JSON", "allow_update": false}, "preferences": {"round_decimal": 3}, "metrics": ["accuracy", "crossEntropy"], "records": {"defaultCategory": []}}
