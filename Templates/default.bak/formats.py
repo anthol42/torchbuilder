@@ -18,5 +18,5 @@ config_format = {
         "n_iter_restart": int,
         "factor_increase": int,
         "min_lr": float
-    },
+    }
 }

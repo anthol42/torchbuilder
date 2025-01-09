@@ -1,64 +1,52 @@
 import numpy as np
+from torchmetrics import Metric
+import torch
 
-
-class DynamicMetric:
+class DynamicMetric(Metric):
     """
-    Class that facilitate keeping track of metrics and display it.  Works well with the Feedback class.
-
-    How to use:
-        1. Create a DynamicMetric object
-        2. Call the object when a new value comes to update the metric.
-
-    Values are stored in attributes:
-        - values: list of every recorded values
-        - count: number of values
-        - sum: sum of every values
-        - avg: mean of every values
-
-    Examples:
-        >>> loss = DynamicMetric(name="loss")
-
-        >>> # Do training steps stuff
-
-        >>> loss(step_loss)
+    Subclass of Metric from torchmetric, compatible with the Feedback API.
+    It creates a mean over the arguments passed as input.
     """
-    def __init__(self, name="metric"):
-        """
-        Initiate the metric value
-        :param name: Name of the metric
-        """
-        self.name=name
-        self._values = []
-        self.count = 0
-        self.sum = 0
-        self.avg = 0
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.add_state("values", default=torch.tensor(0.), dist_reduce_fx="sum") # To mean over all values
+        self.add_state("count", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def __call__(self, value):
-        """
-        This method updates the the counter
-        :param value: value of the step
-        :return: None
-        """
-        self._values.append(value)
-        self.count += 1
-        self.sum += value
-        self.avg = self.sum / self.count
+    def update(self, values: torch.Tensor) -> None:
+        values, values = self._input_format(values, values)
 
-    def values(self) -> np.ndarray:
+        self.values += torch.sum(values)
+        self.count += values.numel()
+        return torch.tensor(1.)
+
+    def compute(self) -> torch.Tensor:
+        return self.values / self.count
+
+    def _input_format(self, preds: torch.Tensor, target: torch.Tensor):
         """
-        return values as numpy array
-        :return: values
+        Implement in the child class to verify the format of the input
+        :raise ValueError: If the input is not in the correct format
         """
-        return np.array(self._values)
-    def __str__(self):
-        return str(self.avg)
+        return preds, target
+
 
 if __name__ == "__main__":
+    from torchmetrics import Accuracy
     import time
-    loss = DynamicMetric(name="loss")
+    # loss = DynamicMetric()
+    acc = Accuracy(task='binary')
+    s = 0
     for i in range(100):
-        loss(i)
-        print(f"\r{loss}", end="")
+        ti = torch.tensor(i).unsqueeze(0)
+        pred = ti%2
+        out = acc(pred, torch.tensor(1).unsqueeze(0))
+        a = (pred == 1).int().item()
+        print(f"{out}")
+        s += a
         time.sleep(0.1)
+
+    print()
+    print("Real mean: ", s/100)
+    print("DynamicMetric mean: ", acc.compute())
 
 

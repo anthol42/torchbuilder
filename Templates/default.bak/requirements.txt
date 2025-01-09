@@ -9,5 +9,3 @@ torchvision
 pandas
 torchinfo
 tensorboard
-antho-utils
-torchmetrics

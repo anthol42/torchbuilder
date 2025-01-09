@@ -1,8 +1,9 @@
-import setup
-from pyutils import progress
 import argparse
+from utils.color import TraceBackColor, Color
+import sys
 from datetime import datetime
 import os
+sys.excepthook = TraceBackColor()
 parser = argparse.ArgumentParser()
 
 # ######################################################################################################################
@@ -21,9 +22,7 @@ parser.add_argument("--debug", action='store_true', default=False)
 parser.add_argument("--comment", required=False, type=str, default=None)
 parser.add_argument("--sample_inputs", action="store_true", default=False)
 parser.add_argument("--noscaler", action="store_true", default=False)
-parser.add_argument("--cpu", action="store_true", default=False) # Train on cpu only
 parser.add_argument("--watch", required=False, type=str, default="accuracy")
-parser.add_argument("--verbose", required=False, type=int, default=3)  # 3: all # 2: logs # 1: errors and warnings only # 0: nothing
 
 # ######################################################################################################################
 # ------------------------------------------ Register you experiments here ------------------------------------------- #
@@ -75,10 +74,6 @@ if __name__ == "__main__":
     if experiment is None:
         raise ValueError(f"Invalid experiment name!  Available experiments are: \n{list(experiments.keys())}")
     os.environ['TORCH_HOME'] = f'{os.getcwd()}/.cache'
-
-    # Hide all deep learning progress bar
-    if args.verbose < 3:
-        progress.set_config(type="dl", display=False)
     experiment(args, kwargs)
     end = datetime.now()
     print(f"Done!  Total time: {(end - start)}")

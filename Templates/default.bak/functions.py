@@ -2,8 +2,6 @@ import os.path
 import glob
 import numpy as np
 import torch
-import socket
-from .bin import *
 
 class InvalidConfigFileException(Exception):
     pass
@@ -128,38 +126,17 @@ def angular(a: torch.Tensor, b: torch.Tensor) -> float:
         a @ b / (torch.linalg.vector_norm(a) * torch.linalg.vector_norm(b))
     )
 
-def get_device(force_cpu: bool = False):
+def get_device():
     """
     Find which device is the optimal device for training.  Priority order: cuda, mps, cpu
     Returns: the device
     """
-    if not force_cpu:
-        if torch.cuda.is_available():
-            return torch.device("cuda")
-        elif torch.backends.mps.is_available():
-            return torch.device("mps")
-        else:
-            warn("Did not find any accelerator. Training may be slow")
-            return torch.device("cpu")
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        return torch.device("mps")
     else:
-        warn("Forcing training on cpu only. Training may be slow.")
         return torch.device("cpu")
 
-def format_metrics(val: bool = False, **metrics):
-    """
-    Format the metrics in a similar way as the progress bar to display values.
-    :param val: Whether to add val_ before the name of the metric or not.
-    :param metrics: The metrics to display
-    :return: The string representation.
-    """
-    if val:
-        return '  '.join(f"val_{name}: {counter.compute():.4f}" for name, counter in metrics.items())
-    else:
-        return '  '.join(f"{name}: {counter.compute():.4f}" for name, counter in metrics.items())
-
-def get_profile():
-    hostname = socket.gethostname()
-    # Use the hostname to automatically find the appropriate profile
-    return "default"
 if __name__ == "__main__":
     pass

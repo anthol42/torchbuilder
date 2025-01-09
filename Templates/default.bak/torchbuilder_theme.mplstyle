@@ -1,0 +1,46 @@
+# from seaborn dark
+
+legend.frameon: True
+legend.numpoints: 1
+legend.scatterpoints: 1
+xtick.direction: out
+ytick.direction: out
+#xtick.color: #2A3459
+#ytick.color: #2A3459
+axes.axisbelow: True
+axes.grid: False
+font.family: sans-serif
+font.sans-serif: Arial, Liberation Sans, DejaVu Sans, Bitstream Vera Sans, sans-serif
+grid.linestyle: -
+lines.solid_capstyle: projecting
+axes.linewidth: 1
+xtick.major.size: 3
+ytick.major.size: 3
+xtick.minor.size: 0
+ytick.minor.size: 0
+
+
+# neon colors: teal/cyan, pink, yellow, matrix green, red, violet
+axes.prop_cycle: cycler('color', ['08F7FE', 'FE53BB', 'F5D300', '00ff41', 'r', '9467bd', "#62d4f3", "#6aa1f7", "#53a480", "#3f2067", "#b2d752", "#c940f4", "#e8e250", "#3b5c85", "#9b5ff4"])
+
+image.cmap: hot
+
+# font color: very light grey
+text.color: 0.9
+axes.edgecolor: 0.9
+axes.labelcolor: 0.9
+xtick.color: 0.9
+ytick.color: 0.9
+
+# background: dark grey
+figure.facecolor: 0a0f0f
+axes.facecolor: 0a0f0f
+savefig.facecolor: 0a0f0f
+
+# grid: bluish dark grey, slightly lighter than background
+grid.color: 2A3459
+
+# Errorbars
+
+lines.linewidth: 1.75
+lines.color: g

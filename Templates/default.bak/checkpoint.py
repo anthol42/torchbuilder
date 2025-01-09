@@ -27,7 +27,7 @@ class SaveBestModel:
 
         >>>save_best_model(np.array(v_loss).mean(), epoch, model, optimizer, criterion)
     """
-    def __init__(self, save_dir, metric_name, model_name, best_metric_val, evaluation_method='MAX', verbose: bool = True):
+    def __init__(self, save_dir, metric_name, model_name, best_metric_val, evaluation_method='MAX'):
         """
         Setup the SaveBestModel object
         :param save_dir: directory where to save the checkpoints
@@ -41,7 +41,6 @@ class SaveBestModel:
         self.model_name = model_name
         self.save_dir = save_dir
         self.evaluation_method = evaluation_method.upper()
-        self.verbose = verbose
         assert self.evaluation_method == "MAX" or self.evaluation_method == "MIN"
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
@@ -60,10 +59,10 @@ class SaveBestModel:
         if self.evaluation_method == "MIN":
             if current_val < self.best_metric_val:
                 self.best_metric_val = current_val
-                if self.verbose:
-                    print(f"Best {self.metric_name}: {self.best_metric_val}")
-                    print(f"Saving best model for epoch: {epoch + 1} at {self.save_dir}")
-                    print(outputMessage)
+                print(f"Best {self.metric_name}: {self.best_metric_val}")
+                print(
+                    f"Saving best model for epoch: {epoch + 1} at {self.save_dir}\n")
+                print(outputMessage)
                 torch.save({
                     'epoch': epoch + 1,
                     'model_state_dict': model.state_dict(),
@@ -75,10 +74,10 @@ class SaveBestModel:
         elif self.evaluation_method == "MAX":  # all other metrics should be maximized
             if current_val > self.best_metric_val:
                 self.best_metric_val = current_val
-                if self.verbose:
-                    print(f"Best {self.metric_name}: {self.best_metric_val}")
-                    print(f"Saving best model for epoch: {epoch + 1} at {self.save_dir}")
-                    print(outputMessage)
+                print(f"Best {self.metric_name}: {self.best_metric_val}")
+                print(
+                    f"Saving best model for epoch: {epoch + 1} at {self.save_dir}\n")
+                print(outputMessage)
                 torch.save({
                     'epoch': epoch + 1,
                     'model_state_dict': model.state_dict(),

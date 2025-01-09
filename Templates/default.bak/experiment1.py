@@ -1,5 +1,7 @@
 import torch
 from torch.utils.tensorboard import SummaryWriter
+import torchvision
+import numpy as np
 import os
 from data.dataloader import make_dataloader
 from models import Classifier
@@ -9,33 +11,31 @@ from losses.loss import make_loss
 from schedulers.scheduler import make_scheduler
 import sys
 import shutil
-from utils import Table, State, get_profile
+from utils.resultTable import Table
 import utils
-from pyutils import Colors, ResetColor, ConfigFile
 from utils.bin import *
-from torchmetrics import Accuracy
+from utils import State
+import matplotlib.pyplot as plt
+from metrics import accuracy
 from torchinfo import summary
 # To verify if the config has the good format
 from configs.formats import config_format
 
 metrics = {
-    "accuracy": Accuracy(task="multiclass", num_classes=10),
+    "accuracy": accuracy,
 }
 
 
 def experiment1(args, kwargs):
-    config_loggers_with_verbose(args.verbose)
     # Setup
-    device = utils.get_device(args.cpu)
-    log(f"Running on {device}")
+    device = utils.get_device()
+    plt.style.use('torchbuilder_theme.mplstyle')
     hyper = utils.clean_dict(vars(args).copy())
 
     DEBUG = args.debug
 
     # Loading the config file
-    # Note: There are no profiles in the template config file
-    config = ConfigFile(args.config, config_format, verify_path=True, profiles=["default"])
-    config.change_profile(get_profile())
+    config = utils.ConfigFile(args.config, config_format, verify_path=True)
     config.override_config(kwargs)
 
     # Preparing Result Table
@@ -43,7 +43,7 @@ def experiment1(args, kwargs):
     sys.excepthook = rtable.handle_exception(sys.excepthook)
     if DEBUG:
         run_id = "DEBUG"
-        log(f"Running in {Colors.warning}DEBUG{ResetColor()} mode!")
+        log(f"Running in {Color(203)}DEBUG{ResetColor()} mode!")
     else:
         resultSocket = rtable.registerRecord(__name__, args.config, category=None, **hyper)
         run_id = resultSocket.get_run_id()
@@ -62,8 +62,7 @@ def experiment1(args, kwargs):
     # Loading the model
     model = Classifier(config)
     model.to(device)
-    if args.verbose >= 3:
-        summary(model, input_size=(config["data"]["batch_size"], 1, 28, 28), device=device)
+    summary(model, input_size=(config["data"]["batch_size"], 1, 28, 28), device=device)
     log("Model loaded successfully!")
 
     # Loading optimizer, loss and scheduler
@@ -78,7 +77,6 @@ def experiment1(args, kwargs):
     else:
         sample_inputs = None
     log("Begining training...")
-    log(f"Watching: {args.watch}")
     try:
         train(
             model=model,
@@ -92,13 +90,12 @@ def experiment1(args, kwargs):
             config=config,
             metrics=metrics,
             watch=args.watch,
-            sample_inputs=sample_inputs,
-            verbose=args.verbose
+            sample_inputs=sample_inputs
         )
     except KeyboardInterrupt:
         log("Keyboard Interrupt detected. Ending training...", start="\n", end="\n\n")
 
-    log("Training done!")
+    log("Training done!  Saving...")
 
     # Load best model
     log("Loading best model")
@@ -113,7 +110,8 @@ def experiment1(args, kwargs):
         "epoch": config["training"]["num_epochs"],
         "model_state_dict": model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
-        "test_results": results
+        "test_loss": results["loss"],
+        "test_acc": results["accuracy"]
     }
     torch.save(
         save_dict, f"{config['model']['model_dir']}/final_{config['model']['name']}.pth")
@@ -121,8 +119,8 @@ def experiment1(args, kwargs):
     shutil.copy(args.config, config['model']["model_dir"])
 
     # Print stats of code
-    if config.have_warnings():
-        warn(config.get_warnings())
+    print(config.stats())
+    print(f"{utils.Color(11)}{State.warning()}{utils.ResetColor()}")
 
     State.writer.flush()
     State.writer.close()
