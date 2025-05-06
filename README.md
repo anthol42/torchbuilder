@@ -1,5 +1,5 @@
 # TorchBuilder
-**- Current version 0.2.2 -**  
+**- Current version 0.3.0 -**  
 TorchBuilder is an easy-to-use tool designed to help you research faster and more efficiently.
 It is a tool that will create the whole folder tree of you project in only one terminal 
 command.  In addition, it implements a lot of boiler plates for you with the same command.
