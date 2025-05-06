@@ -9,7 +9,7 @@ Since we are training and evaluating on the MNIST dataset, we expect results abo
 dataset.
 
 ## Results
-
+Check the notebook:)
 
 ## Short discussion
 

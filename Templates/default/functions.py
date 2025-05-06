@@ -2,6 +2,8 @@ import os.path
 import glob
 import numpy as np
 import torch
+import socket
+from .bin import *
 
 class InvalidConfigFileException(Exception):
     pass
@@ -108,7 +110,9 @@ def clean_dict(dictionary: dict):
     out.pop("config")
     out.pop("experiment")
     out.pop("debug")
-    for key, value in dictionary.items():
+    out.pop("comment")
+
+    for key, value in out.items():
         if value is None:
             out.pop(key)
     return out
@@ -126,17 +130,51 @@ def angular(a: torch.Tensor, b: torch.Tensor) -> float:
         a @ b / (torch.linalg.vector_norm(a) * torch.linalg.vector_norm(b))
     )
 
-def get_device():
+def get_device(force_cpu: bool = False):
     """
     Find which device is the optimal device for training.  Priority order: cuda, mps, cpu
     Returns: the device
     """
-    if torch.cuda.is_available():
-        return torch.device("cuda")
-    elif torch.backends.mps.is_available():
-        return torch.device("mps")
+    if not force_cpu:
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        elif torch.backends.mps.is_available():
+            return torch.device("mps")
+        else:
+            warn("Did not find any accelerator. Training may be slow")
+            return torch.device("cpu")
     else:
+        warn("Forcing training on cpu only. Training may be slow.")
         return torch.device("cpu")
+
+def format_metrics(val: bool = False, **metrics):
+    """
+    Format the metrics in a similar way as the progress bar to display values.
+    :param val: Whether to add val_ before the name of the metric or not.
+    :param metrics: The metrics to display
+    :return: The string representation.
+    """
+    if val:
+        return '  '.join(f"val_{name}: {counter.compute():.4f}" for name, counter in metrics.items())
+    else:
+        return '  '.join(f"{name}: {counter.compute():.4f}" for name, counter in metrics.items())
+
+def get_profile(device):
+    # If you want to change profile based on the machine
+    hostname = socket.gethostname()
+
+    # For the purpose of the example, we base the profile on the compute capabilities (cpu or gpu)
+    if device == "cpu":
+        return "cpu"
+    else:
+        return "gpu"
+
+def get_experiment_name(context_name: str):
+    return context_name.split(".")[-1].capitalize()
+
+class SIGTERMError(Exception): pass
+def handle_term(signum, frame):
+    raise SIGTERMError("SIGTERM signal received, exiting.")
 
 if __name__ == "__main__":
     pass
