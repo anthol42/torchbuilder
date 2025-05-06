@@ -55,10 +55,12 @@ def train_one_epoch(dataloader, model, optimizer, criterion, epoch, device, sche
         metr["loss"] = loss.item()
 
         # Report metrics
-        State.writer.add_scalar('Step/Loss', metr["loss"], State.global_step)
+        State.resultSocket.add_scalar('Step/Loss', metr["loss"], epoch=epoch)
         lossCounter(loss)
         for metric_name, value in metr.items():
-            State.writer.add_scalar(f'Step/{metric_name}', value, State.global_step)
+            if metric_name == "loss":
+                continue
+            State.resultSocket.add_scalar(f'Step/{metric_name}', value, epoch=epoch)
 
         #Display metrics
         prg.report(
@@ -68,8 +70,8 @@ def train_one_epoch(dataloader, model, optimizer, criterion, epoch, device, sche
 
     # Report epochs metrics
     for metric_name, counter in metrics.items():
-        State.writer.add_scalar(f'Train/{metric_name}', counter.compute(), epoch)
-    State.writer.add_scalar(f'Train/Loss', lossCounter.compute(), epoch)
+        State.resultSocket.add_scalar(f'Train/{metric_name}', counter.compute(), State.global_step, epoch=epoch)
+    State.resultSocket.add_scalar(f'Train/Loss', lossCounter.compute(), State.global_step, epoch=epoch, flush=True)
 
 @torch.inference_mode()
 def validation_step(model, dataloader, criterion, epoch, device, metrics: dict = None, verbose: bool = True):
@@ -101,14 +103,14 @@ def validation_step(model, dataloader, criterion, epoch, device, metrics: dict =
 
     # Display metrics
     if verbose:
-        print(f'{Colors.darken} | {format_metrics(val=True, loss=lossCounter, **metrics)}{ResetColor()}')
+        print(f'{Colors.darken} | {format_metrics(val=True, loss=lossCounter, **metrics)}{Colors.reset}')
 
     # Report epochs metrics
     last_valid = {}
     for metric_name, counter in metrics.items():
-        State.writer.add_scalar(f'Valid/{metric_name}', counter.compute(), epoch)
+        State.resultSocket.add_scalar(f'Valid/{metric_name}', counter.compute(), State.global_step, epoch=epoch)
         last_valid[metric_name] = counter.compute()
-    State.writer.add_scalar(f'Valid/Loss', lossCounter.compute(), epoch)
+    State.resultSocket.add_scalar(f'Valid/Loss', lossCounter.compute(), State.global_step, epoch=epoch, flush=True)
     last_valid["loss"] = lossCounter.compute()
     State.last_valid = last_valid
 
@@ -128,9 +130,9 @@ def train(model, optimizer, train_loader, val_loader, criterion, num_epochs, dev
         # We cannot do mixed precision on cpu or mps
         scaler = None
 
-    for epoch in range(num_epochs):
+    for epoch in range(1, num_epochs + 1):
         # Setup
-        print(f"Epoch {epoch + 1}/{num_epochs}") if verbose == 3 else None
+        print(f"Epoch {epoch}/{num_epochs}") if verbose == 3 else None
 
         # Train the epoch and validate
         train_one_epoch(

@@ -1,5 +1,4 @@
 import torch
-from torch.utils.tensorboard import SummaryWriter
 import os
 from data.dataloader import make_dataloader
 from models import Classifier
@@ -9,9 +8,10 @@ from losses.loss import make_loss
 from schedulers.scheduler import make_scheduler
 import sys
 import shutil
-from utils import Table, State, get_profile
+from utils import State, get_profile
+from deepboard.resultTable import ResultTable
 import utils
-from pyutils import Colors, ResetColor, ConfigFile
+from pyutils import Colors, ConfigFile
 from utils.bin import *
 from torchmetrics import Accuracy
 from torchinfo import summary
@@ -33,28 +33,34 @@ def experiment1(args, kwargs):
     DEBUG = args.debug
 
     # Loading the config file
-    # Note: There are no profiles in the template config file
-    config = ConfigFile(args.config, config_format, verify_path=True, profiles=["default"])
-    config.change_profile(get_profile())
+    # We select the config for the CNN model and the local profile. You can change according to your setup
+    config = ConfigFile(args.config, config_format.get(option="CNN"), verify_path=True, profiles=["cpu", "gpu"])
+
+    config.change_profile(get_profile(device))
     config.override_config(kwargs)
+    hyper.update(kwargs)
 
     # Preparing Result Table
-    rtable = Table("results/resultTable.json")
-    sys.excepthook = rtable.handle_exception(sys.excepthook)
+    rtable = ResultTable("results/resultTable.db")
     if DEBUG:
-        run_id = "DEBUG"
-        log(f"Running in {Colors.warning}DEBUG{ResetColor()} mode!")
+        log(f"Running in {Colors.warning}DEBUG{Colors.reset} mode!")
+        resultSocket = rtable.new_debug_run(utils.get_experiment_name(__name__), args.config, cli=hyper, comment=args.comment)
     else:
-        resultSocket = rtable.registerRecord(__name__, args.config, category=None, **hyper)
-        run_id = resultSocket.get_run_id()
+        resultSocket = rtable.new_run(utils.get_experiment_name(__name__), args.config, cli=hyper, comment=args.comment)
+
+    # Add hyperparameters
+    resultSocket.add_hparams(
+        lr=config["training"]["learning_rate"],
+        wd=config["training"]["weight_decay"],
+        min_lr=config["scheduler"]["min_lr"],
+        dropout2d=config["model"]["dropout2d"],
+        dropout=config["model"]["dropout"]
+    )
+    run_id = resultSocket.run_id
 
     config["model"]["model_dir"] = f'{config["model"]["model_dir"]}/{run_id}'
 
-    comment = '' if hyper.get("comment") is None else hyper.get("comment")
-    if os.path.exists(f'runs/{run_id}'):
-        log(f"Clearing tensorboard logs for id: {run_id}")
-        shutil.rmtree(f'runs/{run_id}')
-    State.writer = SummaryWriter(log_dir=f'runs/{run_id}', comment=comment)
+    State.resultSocket = resultSocket
     # Loading the data
     train_loader, val_loader, test_loader = make_dataloader(config=config)
     log("Data loaded successfully!")
@@ -124,13 +130,8 @@ def experiment1(args, kwargs):
     if config.have_warnings():
         warn(config.get_warnings())
 
-    State.writer.flush()
-    State.writer.close()
-
     # Save results
-    if not DEBUG:
-        resultSocket.write(accuracy=results["accuracy"], crossEntropy=results["loss"])
-        rtable.toTxt()
+    resultSocket.write_result(accuracy=results["accuracy"].item(), crossEntropy=results["loss"].item())
 
 
 

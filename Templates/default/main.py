@@ -1,8 +1,14 @@
-import setup
+import setup # Initiate project configurations
 from pyutils import progress
 import argparse
 from datetime import datetime
 import os
+import signal
+import utils
+
+# Detect sigterm to raise an exception and set the status to failed in resultTable + clean exit
+signal.signal(signal.SIGTERM, utils.handle_term)
+
 parser = argparse.ArgumentParser()
 
 # ######################################################################################################################

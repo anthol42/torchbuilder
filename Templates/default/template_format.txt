@@ -1,8 +1,7 @@
 default:
-[<36 files>--<16 directories>]
+[<32 files>--<15 directories>]
   make_computeCan_venv.sh
   requirements.txt
-  torchbuilder_theme.mplstyle
   README.md
   setup.py
   .gitignore
@@ -14,9 +13,6 @@ default:
   [<2 files>--<0 directory>]
     __init__.py
     loss.py
-  builders:
-  [<1 file>--<0 directory>]
-    buildResultTable.py
   experiments:
   [<3 files>--<0 directory>]
     experiment1.py
@@ -27,14 +23,13 @@ default:
     __init__.py
     train.py
   utils:
-  [<7 files>--<0 directory>]
+  [<6 files>--<0 directory>]
     functions.py
     checkpoint.py
     bin.py
     __init__.py
     dynamicMetric.py
     stateManager.py
-    resultTable.py
   models:
   [<2 files>--<0 directory>]
     __init__.py
@@ -44,8 +39,7 @@ default:
     __init__.py
     optimizer.py
   results:
-  [<1 file>--<0 directory>]
-    resultTable.json
+  [<0 file>--<0 directory>]
   saved_models:
   [<0 file>--<0 directory>]
   logs:

@@ -110,7 +110,9 @@ def clean_dict(dictionary: dict):
     out.pop("config")
     out.pop("experiment")
     out.pop("debug")
-    for key, value in dictionary.items():
+    out.pop("comment")
+
+    for key, value in out.items():
         if value is None:
             out.pop(key)
     return out
@@ -157,9 +159,22 @@ def format_metrics(val: bool = False, **metrics):
     else:
         return '  '.join(f"{name}: {counter.compute():.4f}" for name, counter in metrics.items())
 
-def get_profile():
+def get_profile(device):
+    # If you want to change profile based on the machine
     hostname = socket.gethostname()
-    # Use the hostname to automatically find the appropriate profile
-    return "default"
+
+    # For the purpose of the example, we base the profile on the compute capabilities (cpu or gpu)
+    if device == "cpu":
+        return "cpu"
+    else:
+        return "gpu"
+
+def get_experiment_name(context_name: str):
+    return context_name.split(".")[-1].capitalize()
+
+class SIGTERMError(Exception): pass
+def handle_term(signum, frame):
+    raise SIGTERMError("SIGTERM signal received, exiting.")
+
 if __name__ == "__main__":
     pass

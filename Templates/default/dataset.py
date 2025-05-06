@@ -7,14 +7,14 @@ import matplotlib.pyplot as plt
 
 def make_dataset(config):
     training_data = datasets.MNIST(
-        root="data",
+        root=config["data"]["path"],
         train=True,
         download=True,
         transform=ToTensor()
     )
 
     test_data = datasets.MNIST(
-        root="data",
+        root=config["data"]["path"],
         train=False,
         download=True,
         transform=ToTensor()
