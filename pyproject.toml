@@ -1,0 +1,34 @@
+[project]
+name = "torchbuilder"
+version = "1.0.1"
+description = "Easily build project templates"
+readme = "README.md"
+authors = [
+    { email = "alavertu2@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "typer>=0.16.0",
+]
+urls = { "Homepage" = "https://github.com/anthol42/torchbuilder" }
+
+[project.scripts]
+torchbuilder = "torchbuilder.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.hooks.version]
+path = "src/torchbuilder/_version.py"
+
+[tool.hatch.build]
+# Include only these in the final wheel/sdist
+sources = ["src"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/torchbuilder",
+  "pyproject.toml",
+  "README.md"
+]
