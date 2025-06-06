@@ -58,6 +58,7 @@ torchbuilder install <path_or_git_url>
 ```
 Local file example:
 ```commandline
+<<<<<<< HEAD
 torchbuilder install /path/to/my/template
 ```
 
