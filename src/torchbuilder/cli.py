@@ -154,9 +154,7 @@ def version_callback(value: bool):
 def cb(
     version: bool = typer.Option(None, "--version", callback=version_callback, is_eager=True),
 ):
-    """
-    Weird synthax, but this is what enables the --version flag to work
-    """
+    # Weird synthax, but this is what enables the --version flag to work
     return
 
 def main():
