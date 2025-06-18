@@ -1,4 +1,5 @@
 import json
+import sys
 
 import typer
 import os
@@ -136,7 +137,7 @@ def new(path: str, template: str = "default", noinit: bool = False):
         if os.path.exists(init_script):
             try:
                 import subprocess
-                subprocess.run(["python", init_script], check=True)
+                subprocess.run([sys.executable, init_script], check=True)
             except subprocess.CalledProcessError as e:
                 error(f"Initialization script failed: {e}")
 
